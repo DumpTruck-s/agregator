@@ -12,6 +12,7 @@ interface CartStore {
   tradePointId: string | null;
   items: CartItem[];
   addItem: (orgId: string, tradePointId: string, item: Omit<CartItem, 'quantity'>) => void;
+  decreaseItem: (menuItemId: string) => void;
   removeItem: (menuItemId: string) => void;
   clear: () => void;
   total: () => number;
@@ -34,6 +35,18 @@ export const useCartStore = create<CartStore>((set, get) => ({
       set({ items: items.map(i => i.menuItemId === item.menuItemId ? { ...i, quantity: i.quantity + 1 } : i) });
     } else {
       set({ orgId, tradePointId, items: [...items, { ...item, quantity: 1 }] });
+    }
+  },
+
+  /** Уменьшить количество на 1, при 0 — удалить из корзины */
+  decreaseItem(menuItemId) {
+    const { items } = get();
+    const item = items.find(i => i.menuItemId === menuItemId);
+    if (!item) return;
+    if (item.quantity <= 1) {
+      set({ items: items.filter(i => i.menuItemId !== menuItemId) });
+    } else {
+      set({ items: items.map(i => i.menuItemId === menuItemId ? { ...i, quantity: i.quantity - 1 } : i) });
     }
   },
 

@@ -15,6 +15,15 @@ export async function getMyOrg(ownerId: string) {
   });
 }
 
+export async function getOrgById(id: string) {
+  const org = await prisma.organization.findUnique({
+    where: { id, isActive: true },
+    select: { id: true, name: true, description: true, logo: true, tradePoints: true },
+  });
+  if (!org) throw new NotFoundError('Organization');
+  return org;
+}
+
 export async function listOrgs() {
   return prisma.organization.findMany({
     where: { isActive: true, isVerified: true },

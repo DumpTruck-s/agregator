@@ -1,3 +1,74 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Цветовые токены ────────────────────────────────────────────────── */
+:root {
+  --bg:        #f8fafc;
+  --card:      #ffffff;
+  --muted:     #f1f5f9;
+  --border:    #e2e8f0;
+  --text:      #0f172a;
+  --subtle:    #64748b;
+  --accent:    #0f172a;
+  --accent-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.05);
+}
+
+.dark {
+  --bg:        #0b1120;
+  --card:      #131c2e;
+  --muted:     #1e293b;
+  --border:    #1e293b;
+  --text:      #f1f5f9;
+  --subtle:    #94a3b8;
+  --accent:    #f1f5f9;
+  --accent-fg: #0f172a;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.4);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.5);
+}
+
+/* ─── Базовые стили ──────────────────────────────────────────────────── */
+* { @apply border-border; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--subtle); }
+
+/* ─── Утилиты ────────────────────────────────────────────────────────── */
+@layer utilities {
+  .shadow-theme-sm { box-shadow: var(--shadow-sm); }
+  .shadow-theme-md { box-shadow: var(--shadow-md); }
+  .shadow-theme-lg { box-shadow: var(--shadow-lg); }
+
+  /* Стеклянный эффект */
+  .glass {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .dark .glass {
+    background: rgba(19,28,46,0.75);
+  }
+
+  /* Анимация с задержкой для списков */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.10s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.20s; }
+  .stagger-5 { animation-delay: 0.25s; }
+}

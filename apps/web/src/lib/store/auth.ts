@@ -1,19 +1,15 @@
 import { create } from 'zustand';
 import { api } from '../api';
-import type { Role } from '@delivery/shared';
-
-interface AuthUser {
-  sub: string;
-  email: string;
-  name: string;
-  role: Role;
-}
+import { decodeJwt, setTokenCookie, clearTokenCookie, ROLE_HOME, type JwtPayload } from '../token';
 
 interface AuthStore {
-  user: AuthUser | null;
+  user: JwtPayload | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  /** Возвращает путь для редиректа на основе роли */
+  login: (email: string, password: string) => Promise<string>;
+  register: (data: { email: string; password: string; name: string; role: string }) => Promise<string>;
   logout: () => void;
+  /** Вызывать один раз при маунте приложения */
   hydrate: () => void;
 }
 
@@ -22,27 +18,46 @@ export const useAuthStore = create<AuthStore>((set) => ({
   token: null,
 
   hydrate() {
-    api.loadToken();
+    // Читаем токен из localStorage (cookie уже есть, api.ts нужен localStorage)
     const token = localStorage.getItem('token');
-    if (token) {
-      // Decode JWT payload (no verification — server validates)
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        set({ user: payload, token });
-      } catch {
-        api.setToken(null);
-      }
+    if (!token) return;
+    const payload = decodeJwt(token);
+    if (!payload) {
+      localStorage.removeItem('token');
+      clearTokenCookie();
+      return;
     }
+    api.setToken(token);
+    set({ user: payload, token });
   },
 
   async login(email, password) {
-    const { user, token } = await api.post<{ user: AuthUser; token: string }>('/api/auth/login', { email, password });
-    api.setToken(token);
+    const { user, token } = await api.post<{ user: JwtPayload; token: string }>(
+      '/api/auth/login',
+      { email, password },
+    );
+    api.setToken(token);        // localStorage — для заголовков fetch
+    setTokenCookie(token);      // cookie — для middleware Next.js
     set({ user, token });
+    return ROLE_HOME[user.role];
+  },
+
+  async register({ email, password, name, role }) {
+    await api.post('/api/auth/register', { email, password, name, role });
+    // После регистрации сразу логиним
+    const { user, token } = await api.post<{ user: JwtPayload; token: string }>(
+      '/api/auth/login',
+      { email, password },
+    );
+    api.setToken(token);
+    setTokenCookie(token);
+    set({ user, token });
+    return ROLE_HOME[user.role];
   },
 
   logout() {
     api.setToken(null);
+    clearTokenCookie();
     set({ user: null, token: null });
   },
 }));

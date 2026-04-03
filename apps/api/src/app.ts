@@ -8,6 +8,7 @@ import { authRouter } from './modules/auth/auth.router';
 import { orgRouter } from './modules/org/org.router';
 import { orderRouter } from './modules/order/order.router';
 import { courierRouter } from './modules/courier/courier.router';
+import { adminRouter } from './modules/admin/admin.router';
 
 const app = express();
 const httpServer = createServer(app);
@@ -23,6 +24,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/orgs', orgRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/courier', courierRouter);
+app.use('/api/admin', adminRouter);
 
 app.use(errorHandler);
 
