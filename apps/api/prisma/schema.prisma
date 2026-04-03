@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  COURIER
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  CREATED
+  ACCEPTED
+  COOKING
+  READY
+  PICKED_UP
+  DELIVERING
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  name         String
+  phone        String?
+  createdAt    DateTime @default(now())
+
+  ownedOrgs    Organization[]
+  orders       Order[]        @relation("CustomerOrders")
+  courierOrders Order[]       @relation("CourierOrders")
+  shifts       CourierShift[]
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  ownerId     String
+  name        String
+  description String?
+  logo        String?
+  isActive    Boolean  @default(true)
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  owner       User          @relation(fields: [ownerId], references: [id])
+  tradePoints TradePoint[]
+  categories  MenuCategory[]
+  orders      Order[]
+}
+
+model TradePoint {
+  id                String  @id @default(cuid())
+  orgId             String
+  address           String
+  lat               Float
+  lng               Float
+  deliveryRadiusKm  Float
+
+  org    Organization @relation(fields: [orgId], references: [id])
+  orders Order[]
+}
+
+model MenuCategory {
+  id        String @id @default(cuid())
+  orgId     String
+  name      String
+  sortOrder Int    @default(0)
+
+  org   Organization @relation(fields: [orgId], references: [id])
+  items MenuItem[]
+}
+
+model MenuItem {
+  id          String  @id @default(cuid())
+  categoryId  String
+  name        String
+  description String?
+  price       Float
+  image       String?
+  isAvailable Boolean @default(true)
+
+  category   MenuCategory @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  customerId      String
+  orgId           String
+  tradePointId    String
+  courierId       String?
+  status          OrderStatus @default(CREATED)
+  deliveryAddress String
+  deliveryLat     Float
+  deliveryLng     Float
+  totalPrice      Float
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  customer   User       @relation("CustomerOrders", fields: [customerId], references: [id])
+  org        Organization @relation(fields: [orgId], references: [id])
+  tradePoint TradePoint   @relation(fields: [tradePointId], references: [id])
+  courier    User?      @relation("CourierOrders", fields: [courierId], references: [id])
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  menuItemId String
+  quantity   Int
+  price      Float
+
+  order    Order    @relation(fields: [orderId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model CourierShift {
+  id                String    @id @default(cuid())
+  courierId         String
+  startedAt         DateTime  @default(now())
+  endedAt           DateTime?
+  isActive          Boolean   @default(true)
+  deliveryZoneLat   Float
+  deliveryZoneLng   Float
+  deliveryRadiusKm  Float
+
+  courier User @relation(fields: [courierId], references: [id])
+}
