@@ -9,6 +9,7 @@
     "db:migrate": "turbo run db:migrate"
   },
   "devDependencies": {
+    "prisma": "^5.13.0",
     "turbo": "^2.0.0",
     "typescript": "^5.4.0",
     "@types/node": "^20.0.0"
