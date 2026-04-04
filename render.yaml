@@ -19,7 +19,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        value: https://delivery-web.onrender.com
+        value: https://delivery-web-ub18.onrender.com
       - key: NODE_VERSION
         value: 20
 
@@ -31,8 +31,8 @@ services:
     startCommand: cd apps/web && ../../node_modules/.bin/next start -p $PORT
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://delivery-api.onrender.com
+        value: https://delivery-api-dz8s.onrender.com
       - key: NEXT_PUBLIC_WS_URL
-        value: https://delivery-api.onrender.com
+        value: https://delivery-api-dz8s.onrender.com
       - key: NODE_VERSION
         value: 20
