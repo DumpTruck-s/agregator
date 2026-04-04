@@ -3,12 +3,13 @@
 import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { TILE_URL, TILE_ATTRIBUTION, MARKER_ICON_URL, MARKER_ICON_RETINA_URL, MARKER_SHADOW_URL } from './tiles';
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: MARKER_ICON_URL,
+  iconRetinaUrl: MARKER_ICON_RETINA_URL,
+  shadowUrl: MARKER_SHADOW_URL,
 });
 
 interface Zone {
@@ -31,10 +32,7 @@ export function MapZoneView({ zones, height = '250px' }: MapZoneViewProps) {
   return (
     <div className="rounded-xl overflow-hidden border border-border" style={{ height }}>
       <MapContainer center={center} zoom={11} style={{ height: '100%', width: '100%' }}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
-        />
+        <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
         {zones.map((zone, i) => (
           <div key={i}>
             <Marker position={[zone.lat, zone.lng]} />

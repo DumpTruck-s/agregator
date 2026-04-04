@@ -4,13 +4,13 @@ import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { TILE_URL, TILE_ATTRIBUTION, MARKER_ICON_URL, MARKER_ICON_RETINA_URL, MARKER_SHADOW_URL } from './tiles';
 
-// Fix default marker icons (webpack breaks them)
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: MARKER_ICON_URL,
+  iconRetinaUrl: MARKER_ICON_RETINA_URL,
+  shadowUrl: MARKER_SHADOW_URL,
 });
 
 export interface MapPoint {
@@ -19,11 +19,7 @@ export interface MapPoint {
   address?: string;
 }
 
-interface ClickHandlerProps {
-  onPick: (point: MapPoint) => void;
-}
-
-function ClickHandler({ onPick }: ClickHandlerProps) {
+function ClickHandler({ onPick }: { onPick: (point: MapPoint) => void }) {
   useMapEvents({
     async click(e) {
       const { lat, lng } = e.latlng;
@@ -73,10 +69,7 @@ export function MapPicker({
         style={{ height: '100%', width: '100%' }}
         ref={mapRef}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
-        />
+        <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
         <ClickHandler onPick={onChange} />
         {value && <Marker position={[value.lat, value.lng]} />}
       </MapContainer>

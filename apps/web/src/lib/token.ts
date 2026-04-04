@@ -16,7 +16,12 @@ export const ROLE_HOME: Record<Role, string> = {
 
 export function decodeJwt(token: string): JwtPayload | null {
   try {
-    return JSON.parse(atob(token.split('.')[1])) as JwtPayload;
+    // atob() is Latin-1 only — need proper UTF-8 decode for Cyrillic names
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64).split('').map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
+    );
+    return JSON.parse(json) as JwtPayload;
   } catch {
     return null;
   }

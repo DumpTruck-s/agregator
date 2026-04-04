@@ -3,18 +3,19 @@
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { TILE_URL, TILE_ATTRIBUTION, MARKER_ICON_URL, MARKER_ICON_RETINA_URL, MARKER_SHADOW_URL } from './tiles';
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: MARKER_ICON_URL,
+  iconRetinaUrl: MARKER_ICON_RETINA_URL,
+  shadowUrl: MARKER_SHADOW_URL,
 });
 
 const pickupIcon = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: MARKER_ICON_URL,
+  iconRetinaUrl: MARKER_ICON_RETINA_URL,
+  shadowUrl: MARKER_SHADOW_URL,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   className: 'hue-rotate-[120deg]', // green tint
@@ -40,10 +41,7 @@ export function OrderTrackingMap({ pickup, delivery, height = '250px' }: OrderTr
   return (
     <div className="rounded-xl overflow-hidden border border-border" style={{ height }}>
       <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%' }}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
-        />
+        <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
         <Marker position={[pickup.lat, pickup.lng]} icon={pickupIcon}>
           <Popup>{pickup.label ?? 'Точка отправки'}</Popup>
         </Marker>
