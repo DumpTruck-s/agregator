@@ -1,16 +1,37 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { LucideIcon } from 'lucide-react';
+import { Clock, Package, History, LayoutDashboard, ClipboardList, UtensilsCrossed, Building2, Bike, ShoppingBag, BarChart2, Store, ShoppingCart } from 'lucide-react';
 
-interface Tab {
-  href: string;
-  label: string;
-  Icon: LucideIcon;
-}
+const ROLE_TABS = {
+  courier: [
+    { href: '/courier/dashboard', label: 'Смена',   Icon: Clock },
+    { href: '/courier/orders',    label: 'Заказы',  Icon: Package },
+    { href: '/courier/history',   label: 'История', Icon: History },
+  ],
+  owner: [
+    { href: '/owner/dashboard', label: 'Главная', Icon: LayoutDashboard },
+    { href: '/owner/orders',    label: 'Заказы',  Icon: ClipboardList },
+    { href: '/owner/menu',      label: 'Меню',    Icon: UtensilsCrossed },
+  ],
+  admin: [
+    { href: '/admin/orgs',      label: 'Орги',      Icon: Building2 },
+    { href: '/admin/couriers',  label: 'Курьеры',   Icon: Bike },
+    { href: '/admin/orders',    label: 'Заказы',    Icon: ShoppingBag },
+    { href: '/admin/analytics', label: 'Аналитика', Icon: BarChart2 },
+  ],
+  customer: [
+    { href: '/customer/catalog', label: 'Каталог', Icon: Store },
+    { href: '/customer/cart',    label: 'Корзина', Icon: ShoppingCart },
+    { href: '/customer/orders',  label: 'Заказы',  Icon: ClipboardList },
+  ],
+} as const;
 
-export function BottomNav({ tabs }: { tabs: Tab[] }) {
+type Role = keyof typeof ROLE_TABS;
+
+export function BottomNav({ role }: { role: Role }) {
   const pathname = usePathname();
+  const tabs = ROLE_TABS[role];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-card/95 backdrop-blur-lg border-t border-border safe-area-pb">
