@@ -16,7 +16,7 @@ export function AdminNav() {
   ];
 
   return (
-    <nav className="bg-card border-b border-border px-4 flex gap-0.5 transition-colors">
+    <nav className="hidden sm:flex bg-card border-b border-border px-4 gap-0.5 transition-colors">
       {TABS.map(({ href, label, Icon }) => {
         const active = pathname.startsWith(href);
         return (

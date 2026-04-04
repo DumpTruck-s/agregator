@@ -1,8 +1,9 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Package, MapPin } from 'lucide-react';
+import { Package, MapPin, X } from 'lucide-react';
+import { api } from '@/lib/api';
 import { useOrdersStore } from '@/lib/store/orders';
 import { useLocaleStore } from '@/lib/store/locale';
 import { StatusBadge } from '@/components/orders/status-badge';
@@ -30,8 +31,21 @@ function OrderProgress({ status }: { status: OS }) {
   );
 }
 
+const CANCELLABLE: OrderStatus[] = ['CREATED', 'ACCEPTED', 'COOKING'];
+
 export default function CustomerOrdersPage() {
   const { orders, fetch, updateStatus } = useOrdersStore();
+  const [cancelling, setCancelling] = useState<string | null>(null);
+
+  async function cancelOrder(id: string) {
+    if (!confirm('Отменить заказ?')) return;
+    setCancelling(id);
+    try {
+      await api.patch(`/api/orders/${id}/status`, { status: 'CANCELLED' });
+      updateStatus(id, 'CANCELLED');
+    } catch (e) { alert(e instanceof Error ? e.message : 'Ошибка'); }
+    finally { setCancelling(null); }
+  }
   const t = useLocaleStore(s => s.t);
   const co = t.customerOrders;
 
@@ -83,11 +97,23 @@ export default function CustomerOrdersPage() {
               ))}
             </div>
             <div className="flex items-center justify-between border-t border-border px-4 py-3">
-              <div className="flex items-center gap-1.5 text-subtle max-w-[60%]">
+              <div className="flex items-center gap-1.5 text-subtle max-w-[55%]">
                 <MapPin className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
                 <p className="text-sm truncate">{order.deliveryAddress}</p>
               </div>
-              <p className="font-bold text-text">{order.totalPrice} ₽</p>
+              <div className="flex items-center gap-2">
+                <p className="font-bold text-text">{order.totalPrice} ₽</p>
+                {CANCELLABLE.includes(order.status) && (
+                  <button
+                    onClick={() => cancelOrder(order.id)}
+                    disabled={cancelling === order.id}
+                    className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg px-2 py-1 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all disabled:opacity-50 active:scale-95"
+                  >
+                    <X className="w-3 h-3" strokeWidth={2.5} />
+                    Отменить
+                  </button>
+                )}
+              </div>
             </div>
             {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
               <div className="px-4 pb-3 space-y-3">

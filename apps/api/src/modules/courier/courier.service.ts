@@ -1,4 +1,5 @@
 import { prisma } from '../../shared/prisma';
+import { distanceKm } from '../../shared/geo';
 
 export async function getActiveOrders(courierId: string) {
   return prisma.order.findMany({
@@ -17,16 +18,32 @@ export async function getHistory(courierId: string) {
   });
 }
 
-export async function getAvailableOrders(lat: number, lng: number, radiusKm: number) {
-  // Простой BBOX-фильтр, потом уточняем Haversine
+export async function getAvailableOrders(courierLat: number, courierLng: number, radiusKm: number) {
   const delta = radiusKm / 111;
-  return prisma.order.findMany({
+  const orders = await prisma.order.findMany({
     where: {
       status: 'CREATED',
       courierId: null,
-      deliveryLat: { gte: lat - delta, lte: lat + delta },
-      deliveryLng: { gte: lng - delta, lte: lng + delta },
+      tradePoint: {
+        lat: { gte: courierLat - delta, lte: courierLat + delta },
+        lng: { gte: courierLng - delta, lte: courierLng + delta },
+      },
     },
-    include: { org: true, tradePoint: true },
+    select: {
+      id: true,
+      status: true,
+      totalPrice: true,
+      createdAt: true,
+      // Адрес и координаты доставки НЕ возвращаем до принятия
+      org:        { select: { id: true, name: true, logo: true } },
+      tradePoint: { select: { id: true, address: true, lat: true, lng: true } },
+      items:      { select: { quantity: true, menuItem: { select: { name: true } } } },
+    },
   });
+
+  // Добавляем расстояние от курьера до торговой точки
+  return orders.map(o => ({
+    ...o,
+    distanceKm: Math.round(distanceKm(courierLat, courierLng, o.tradePoint.lat, o.tradePoint.lng) * 10) / 10,
+  }));
 }

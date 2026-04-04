@@ -47,6 +47,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Нативный select — убираем стрелку, делаем похожим на input */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235A62A0' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.25rem !important;
+}
+
 /* Скроллбар */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -55,6 +66,15 @@ body {
 
 /* ─── Утилиты ─────────────────────────────────────────────────────────── */
 @layer utilities {
+  /* Safe area for iOS home bar */
+  .safe-area-pb {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  /* Extra bottom padding on mobile when bottom nav is present */
+  .mobile-safe-bottom {
+    padding-bottom: max(5rem, calc(4rem + env(safe-area-inset-bottom)));
+  }
+
   .shadow-theme-sm { box-shadow: var(--shadow-sm); }
   .shadow-theme-md { box-shadow: var(--shadow-md); }
   .shadow-theme-lg { box-shadow: var(--shadow-lg); }

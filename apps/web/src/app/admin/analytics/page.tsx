@@ -69,19 +69,19 @@ export default function AdminAnalyticsPage() {
           <AreaChart data={data.daily} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="ordersGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="var(--color-accent)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0} />
+                <stop offset="5%"  stopColor="var(--accent)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} interval={4} />
-            <YAxis tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} allowDecimals={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 11, fill: 'var(--subtle)' }} interval={4} />
+            <YAxis tick={{ fontSize: 11, fill: 'var(--subtle)' }} allowDecimals={false} />
             <Tooltip
-              contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 12, fontSize: 12 }}
+              contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
               labelFormatter={(d: unknown) => fmtDate(String(d))}
               formatter={(v: unknown) => [Number(v), 'заказов']}
             />
-            <Area type="monotone" dataKey="orders" stroke="var(--color-accent)" fill="url(#ordersGrad)" strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="orders" stroke="var(--accent)" fill="url(#ordersGrad)" strokeWidth={2} dot={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -97,11 +97,11 @@ export default function AdminAnalyticsPage() {
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} interval={4} />
-            <YAxis tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 11, fill: 'var(--subtle)' }} interval={4} />
+            <YAxis tick={{ fontSize: 11, fill: 'var(--subtle)' }} />
             <Tooltip
-              contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 12, fontSize: 12 }}
+              contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
               labelFormatter={(d: unknown) => fmtDate(String(d))}
               formatter={(v: unknown) => [`${Number(v).toLocaleString('ru-RU')} ₽`, 'выручка']}
             />
@@ -117,14 +117,14 @@ export default function AdminAnalyticsPage() {
           {data.topOrgs.length === 0 ? <p className="text-sm text-subtle">Нет данных</p> : (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={data.topOrgs} layout="vertical" margin={{ top: 0, right: 8, left: 4, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--subtle)' }} allowDecimals={false} />
+                <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11, fill: 'var(--subtle)' }} />
                 <Tooltip
-                  contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 12, fontSize: 12 }}
+                  contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
                   formatter={(v: unknown) => [Number(v), 'заказов']}
                 />
-                <Bar dataKey="orders" fill="var(--color-accent)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="orders" fill="var(--accent)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -136,11 +136,11 @@ export default function AdminAnalyticsPage() {
           {data.topCouriers.length === 0 ? <p className="text-sm text-subtle">Нет данных</p> : (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={data.topCouriers} layout="vertical" margin={{ top: 0, right: 8, left: 4, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11, fill: 'var(--color-subtle)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--subtle)' }} allowDecimals={false} />
+                <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11, fill: 'var(--subtle)' }} />
                 <Tooltip
-                  contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 12, fontSize: 12 }}
+                  contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
                   formatter={(v: unknown) => [Number(v), 'доставок']}
                 />
                 <Bar dataKey="delivered" fill="#10b981" radius={[0, 4, 4, 0]} />
