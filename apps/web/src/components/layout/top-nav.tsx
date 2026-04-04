@@ -54,7 +54,7 @@ export function TopNav() {
             ? (
               <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center shrink-0">
                 <span className="text-[10px] font-bold text-accent-fg leading-none">
-                  {user.name.charAt(0).toUpperCase()}
+                  {(user.name || user.email || '?').charAt(0).toUpperCase()}
                 </span>
               </div>
             )
@@ -80,7 +80,7 @@ export function TopNav() {
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0">
                       <span className="text-sm font-bold text-accent-fg leading-none">
-                        {user.name.charAt(0).toUpperCase()}
+                        {(user.name || user.email || '?').charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div className="min-w-0">
