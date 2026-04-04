@@ -180,3 +180,4 @@ OrderStatus: CREATED → ACCEPTED → COOKING → READY → PICKED_UP → DELIVE
 - **Изоляция организаций**: каждый owner видит только свою org, middleware проверяет `orgId === user.orgId`
 - **Картинки**: хранятся как URL в БД, физически на Cloudinary
 - **Карты**: Leaflet + OpenStreetMap (бесплатно, без API-ключей), обратный геокодинг через Nominatim API
+.

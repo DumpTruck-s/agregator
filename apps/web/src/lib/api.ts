@@ -55,3 +55,9 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+
+// Load token immediately on client side — prevents race condition where
+// page useEffect fires before AuthProvider hydrate() sets the token
+if (typeof window !== 'undefined') {
+  api.loadToken();
+}

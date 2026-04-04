@@ -28,9 +28,9 @@ export async function login(dto: LoginDto) {
   return { user: payload, token: signToken(payload) };
 }
 
-function signToken(user: { id: string; email: string; role: string }) {
+function signToken(user: { id: string; email: string; name?: string; role: string }) {
   return jwt.sign(
-    { sub: user.id, email: user.email, role: user.role },
+    { sub: user.id, email: user.email, name: user.name ?? '', role: user.role },
     process.env.JWT_SECRET!,
     { expiresIn: '7d' },
   );
