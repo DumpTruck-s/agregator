@@ -1,0 +1,37 @@
+databases:
+  - name: delivery-db
+    databaseName: delivery_db
+    user: delivery
+    plan: free
+
+services:
+  - type: web
+    name: delivery-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: delivery-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://delivery-web.onrender.com
+      - key: PORT
+        value: 4000
+
+  - type: web
+    name: delivery-web
+    runtime: node
+    plan: free
+    buildCommand: npm install -g pnpm@9 && pnpm install --shamefully-hoist && pnpm --filter @delivery/shared build && pnpm --filter @delivery/web build
+    startCommand: pnpm --filter @delivery/web start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://delivery-api.onrender.com
+      - key: NEXT_PUBLIC_WS_URL
+        value: https://delivery-api.onrender.com
+      - key: NODE_VERSION
+        value: 20

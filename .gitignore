@@ -6,9 +6,6 @@ dist
 .env.local
 .env.*.local
 
-# prisma
-apps/api/prisma/migrations/*.sql
-
 # logs
 *.log
 npm-debug.log*
