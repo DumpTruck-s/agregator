@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useOrgStore } from '@/lib/store/org';
 import { api } from '@/lib/api';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { StatusBadge } from '@/components/orders/status-badge';
 import type { OrderStatus } from '@delivery/shared';
 
@@ -15,12 +16,13 @@ interface Order {
 function CreateOrgForm({ onCreated }: { onCreated: () => void }) {
   const [name, setName]       = useState('');
   const [desc, setDesc]       = useState('');
+  const [logo, setLogo]       = useState('');
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setLoading(true);
-    try { await api.post('/api/orgs', { name, description: desc }); onCreated(); }
+    try { await api.post('/api/orgs', { name, description: desc || undefined, logo: logo || undefined }); onCreated(); }
     catch (err) { setError(err instanceof Error ? err.message : 'Ошибка'); setLoading(false); }
   }
 
@@ -30,6 +32,7 @@ function CreateOrgForm({ onCreated }: { onCreated: () => void }) {
       <p className="text-sm text-subtle mb-6">После создания добавьте торговую точку и меню</p>
       {error && <p className="text-sm text-red-500 dark:text-red-400 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <ImageUpload value={logo} onChange={setLogo} placeholder="Логотип (необязательно)" />
         <input
           className="border border-border bg-muted rounded-xl px-3 py-2.5 text-sm text-text placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all"
           placeholder="Название ресторана" value={name} onChange={e => setName(e.target.value)} required

@@ -39,6 +39,19 @@ class ApiClient {
     return this.request<T>(path, { method: 'PATCH', body: JSON.stringify(body) });
   }
   delete<T>(path: string) { return this.request<T>(path, { method: 'DELETE' }); }
+
+  async uploadFile(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${BASE_URL}/api/upload`, {
+      method: 'POST',
+      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Upload failed');
+    return (data as { url: string }).url;
+  }
 }
 
 export const api = new ApiClient();

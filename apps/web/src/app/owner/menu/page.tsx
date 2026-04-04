@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useOrgStore, type OrgCategory } from '@/lib/store/org';
 import { api } from '@/lib/api';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 const INPUT = 'border border-border bg-muted rounded-xl px-3 py-2.5 text-sm text-text placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all w-full';
 
@@ -74,7 +75,7 @@ function AddCategoryForm({ orgId, onAdded }: { orgId: string; onAdded: () => voi
 }
 
 function AddItemForm({ orgId, categoryId, onAdded }: { orgId: string; categoryId: string; onAdded: () => void }) {
-  const [form, setForm]     = useState({ name: '', description: '', price: '' });
+  const [form, setForm]     = useState({ name: '', description: '', price: '', image: '' });
   const [loading, setLoading] = useState(false);
   const [open, setOpen]     = useState(false);
 
@@ -83,8 +84,8 @@ function AddItemForm({ orgId, categoryId, onAdded }: { orgId: string; categoryId
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setLoading(true);
     try {
-      await api.post(`/api/orgs/${orgId}/items`, { categoryId, name: form.name, description: form.description || undefined, price: parseFloat(form.price), isAvailable: true });
-      setForm({ name: '', description: '', price: '' }); setOpen(false); onAdded();
+      await api.post(`/api/orgs/${orgId}/items`, { categoryId, name: form.name, description: form.description || undefined, price: parseFloat(form.price), image: form.image || undefined, isAvailable: true });
+      setForm({ name: '', description: '', price: '', image: '' }); setOpen(false); onAdded();
     } catch (e) { alert(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
   }
@@ -102,6 +103,7 @@ function AddItemForm({ orgId, categoryId, onAdded }: { orgId: string; categoryId
         <input className={INPUT} type="number" placeholder="Цена, ₽" value={form.price} onChange={f('price')} min="1" step="0.01" required />
       </div>
       <input className={INPUT} placeholder="Описание (необязательно)" value={form.description} onChange={f('description')} />
+      <ImageUpload value={form.image} onChange={url => setForm(v => ({...v, image: url}))} placeholder="Фото блюда (необязательно)" />
       <div className="flex gap-2">
         <button type="submit" disabled={loading} className="bg-accent text-accent-fg rounded-lg px-3 py-1.5 text-xs hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">{loading ? '...' : 'Добавить'}</button>
         <button type="button" onClick={() => setOpen(false)} className="text-xs text-subtle hover:text-text transition-colors">Отмена</button>

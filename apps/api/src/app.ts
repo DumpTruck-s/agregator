@@ -9,6 +9,7 @@ import { orgRouter } from './modules/org/org.router';
 import { orderRouter } from './modules/order/order.router';
 import { courierRouter } from './modules/courier/courier.router';
 import { adminRouter } from './modules/admin/admin.router';
+import { uploadRouter } from './modules/upload/upload.router';
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,6 +26,7 @@ app.use('/api/orgs', orgRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/courier', courierRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/upload', uploadRouter);
 
 app.use(errorHandler);
 
