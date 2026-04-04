@@ -19,8 +19,6 @@ services:
         generateValue: true
       - key: FRONTEND_URL
         value: https://delivery-web.onrender.com
-      - key: PORT
-        value: 4000
 
   - type: web
     name: delivery-web
