@@ -1,8 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useOrgStore, type OrgCategory } from '@/lib/store/org';
 import { api } from '@/lib/api';
 import { ImageUpload } from '@/components/ui/image-upload';
+import type { MapPoint } from '@/components/maps/MapPicker';
+
+const MapPicker = dynamic(() => import('@/components/maps/MapPicker').then(m => m.MapPicker), { ssr: false, loading: () => <div className="h-[300px] bg-muted rounded-xl animate-pulse" /> });
+const MapZoneView = dynamic(() => import('@/components/maps/MapZoneView').then(m => m.MapZoneView), { ssr: false, loading: () => <div className="h-[250px] bg-muted rounded-xl animate-pulse" /> });
 
 const INPUT = 'border border-border bg-muted rounded-xl px-3 py-2.5 text-sm text-text placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all w-full';
 
@@ -11,15 +16,22 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function AddTradePointForm({ orgId, onAdded }: { orgId: string; onAdded: () => void }) {
-  const [form, setForm]   = useState({ address: '', lat: '', lng: '', deliveryRadiusKm: '5' });
+  const [point, setPoint]   = useState<MapPoint | null>(null);
+  const [radius, setRadius] = useState('5');
   const [loading, setLoading] = useState(false);
-  const [open, setOpen]   = useState(false);
+  const [open, setOpen]     = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault(); setLoading(true);
+    e.preventDefault();
+    if (!point) { alert('Выберите точку на карте'); return; }
+    setLoading(true);
     try {
-      await api.post(`/api/orgs/${orgId}/trade-points`, { address: form.address, lat: parseFloat(form.lat), lng: parseFloat(form.lng), deliveryRadiusKm: parseFloat(form.deliveryRadiusKm) });
-      setOpen(false); setForm({ address: '', lat: '', lng: '', deliveryRadiusKm: '5' }); onAdded();
+      await api.post(`/api/orgs/${orgId}/trade-points`, {
+        address: point.address ?? `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`,
+        lat: point.lat, lng: point.lng,
+        deliveryRadiusKm: parseFloat(radius),
+      });
+      setOpen(false); setPoint(null); setRadius('5'); onAdded();
     } catch (e) { alert(e instanceof Error ? e.message : 'Ошибка'); }
     finally { setLoading(false); }
   }
@@ -33,14 +45,18 @@ function AddTradePointForm({ orgId, onAdded }: { orgId: string; onAdded: () => v
   return (
     <form onSubmit={handleSubmit} className="border border-border bg-card rounded-2xl p-4 space-y-3 animate-scale-in shadow-theme-sm">
       <p className="font-medium text-sm text-text">Новая торговая точка</p>
-      <Field label="Адрес"><input className={INPUT} placeholder="ул. Ленина, 1" value={form.address} onChange={e => setForm(f => ({...f, address: e.target.value}))} required /></Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Широта"><input className={INPUT} placeholder="55.7558" value={form.lat} onChange={e => setForm(f => ({...f, lat: e.target.value}))} required /></Field>
-        <Field label="Долгота"><input className={INPUT} placeholder="37.6176" value={form.lng} onChange={e => setForm(f => ({...f, lng: e.target.value}))} required /></Field>
-      </div>
-      <Field label="Радиус доставки (км)"><input className={INPUT} type="number" min="0.5" step="0.5" value={form.deliveryRadiusKm} onChange={e => setForm(f => ({...f, deliveryRadiusKm: e.target.value}))} required /></Field>
+      <p className="text-xs text-subtle">Кликните на карте чтобы выбрать местоположение</p>
+      <MapPicker value={point} onChange={setPoint} height="300px" />
+      {point && (
+        <div className="text-xs text-subtle bg-muted rounded-lg px-3 py-2 truncate">
+          📍 {point.address}
+        </div>
+      )}
+      <Field label="Радиус доставки (км)">
+        <input className={INPUT} type="number" min="0.5" step="0.5" value={radius} onChange={e => setRadius(e.target.value)} required />
+      </Field>
       <div className="flex gap-2 pt-1">
-        <button type="submit" disabled={loading} className="bg-accent text-accent-fg rounded-xl px-4 py-2 text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">{loading ? '...' : 'Сохранить'}</button>
+        <button type="submit" disabled={loading || !point} className="bg-accent text-accent-fg rounded-xl px-4 py-2 text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">{loading ? '...' : 'Сохранить'}</button>
         <button type="button" onClick={() => setOpen(false)} className="text-sm text-subtle hover:text-text transition-colors">Отмена</button>
       </div>
     </form>
@@ -165,12 +181,19 @@ export default function OwnerMenuPage() {
         <h2 className="font-semibold text-text mb-3">Торговые точки</h2>
         {org.tradePoints.length === 0
           ? <p className="text-sm text-subtle mb-3">Нет торговых точек</p>
-          : <div className="space-y-2 mb-3">{org.tradePoints.map(tp => (
-              <div key={tp.id} className="bg-card border border-border rounded-xl px-4 py-3 text-sm flex justify-between text-text">
-                <span>📍 {tp.address}</span>
-                <span className="text-subtle">радиус {tp.deliveryRadiusKm} км</span>
-              </div>
-            ))}</div>
+          : (
+            <div className="space-y-3 mb-3">
+              {org.tradePoints.map(tp => (
+                <div key={tp.id} className="bg-card border border-border rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 text-sm flex justify-between text-text">
+                    <span>📍 {tp.address}</span>
+                    <span className="text-subtle">радиус {tp.deliveryRadiusKm} км</span>
+                  </div>
+                  <MapZoneView zones={[{ lat: tp.lat, lng: tp.lng, radiusKm: tp.deliveryRadiusKm }]} height="200px" />
+                </div>
+              ))}
+            </div>
+          )
         }
         <AddTradePointForm orgId={org.id} onAdded={fetch} />
       </section>

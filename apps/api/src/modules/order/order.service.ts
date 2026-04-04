@@ -75,7 +75,7 @@ export async function updateStatus(
 export async function getMyOrders(customerId: string) {
   return prisma.order.findMany({
     where: { customerId },
-    include: { items: { include: { menuItem: true } }, org: true },
+    include: { items: { include: { menuItem: true } }, org: true, tradePoint: true },
     orderBy: { createdAt: 'desc' },
   });
 }

@@ -7,8 +7,11 @@ export interface Order {
   status: OrderStatus;
   totalPrice: number;
   deliveryAddress: string;
+  deliveryLat: number;
+  deliveryLng: number;
   createdAt: string;
   org: { name: string };
+  tradePoint: { address: string; lat: number; lng: number } | null;
   items: { quantity: number; price: number; menuItem: { name: string } }[];
 }
 

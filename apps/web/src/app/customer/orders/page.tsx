@@ -1,10 +1,13 @@
 'use client';
 import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useOrdersStore } from '@/lib/store/orders';
 import { StatusBadge } from '@/components/orders/status-badge';
 import { getSocket, connectSocket, joinOrderRoom } from '@/lib/socket';
 import type { OrderStatus } from '@delivery/shared';
+
+const OrderTrackingMap = dynamic(() => import('@/components/maps/OrderTrackingMap').then(m => m.OrderTrackingMap), { ssr: false, loading: () => <div className="h-[200px] bg-muted rounded-xl animate-pulse" /> });
 
 type OS = OrderStatus;
 
@@ -78,8 +81,15 @@ export default function CustomerOrdersPage() {
               <p className="font-bold text-text">{order.totalPrice} ₽</p>
             </div>
             {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
-              <div className="px-4 pb-3">
+              <div className="px-4 pb-3 space-y-3">
                 <OrderProgress status={order.status} />
+                {order.tradePoint && order.deliveryLat && order.deliveryLng && (
+                  <OrderTrackingMap
+                    pickup={{ lat: order.tradePoint.lat, lng: order.tradePoint.lng, label: order.tradePoint.address }}
+                    delivery={{ lat: order.deliveryLat, lng: order.deliveryLng, label: order.deliveryAddress }}
+                    height="200px"
+                  />
+                )}
               </div>
             )}
           </div>

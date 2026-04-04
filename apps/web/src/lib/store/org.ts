@@ -11,7 +11,7 @@ export interface OrgCategory {
 export interface OrgDetails {
   id: string; name: string; description?: string; logo?: string;
   isVerified: boolean; isActive: boolean;
-  tradePoints: { id: string; address: string; deliveryRadiusKm: number }[];
+  tradePoints: { id: string; address: string; lat: number; lng: number; deliveryRadiusKm: number }[];
   categories: OrgCategory[];
 }
 
