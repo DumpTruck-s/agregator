@@ -7,9 +7,10 @@ databases:
 services:
   - type: web
     name: delivery-api
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    runtime: node
     plan: free
+    buildCommand: npm install -g pnpm@9 && pnpm install --shamefully-hoist && node_modules/.bin/tsc -p packages/shared/tsconfig.json && node_modules/.bin/prisma generate --schema=apps/api/prisma/schema.prisma && node_modules/.bin/tsc -p apps/api/tsconfig.json
+    startCommand: node_modules/.bin/prisma migrate deploy --schema=apps/api/prisma/schema.prisma && node apps/api/dist/app.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -19,15 +20,15 @@ services:
         generateValue: true
       - key: FRONTEND_URL
         value: https://delivery-web.onrender.com
-      - key: PORT
-        value: 4000
+      - key: NODE_VERSION
+        value: 20
 
   - type: web
     name: delivery-web
     runtime: node
     plan: free
-    buildCommand: npm install -g pnpm@9 && pnpm install --shamefully-hoist && pnpm --filter @delivery/shared build && pnpm --filter @delivery/web build
-    startCommand: pnpm --filter @delivery/web start
+    buildCommand: npm install -g pnpm@9 && pnpm install --shamefully-hoist && node_modules/.bin/tsc -p packages/shared/tsconfig.json && cd apps/web && ../../node_modules/.bin/next build
+    startCommand: cd apps/web && ../../node_modules/.bin/next start -p $PORT
     envVars:
       - key: NEXT_PUBLIC_API_URL
         value: https://delivery-api.onrender.com
