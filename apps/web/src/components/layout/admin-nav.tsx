@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Building2, Bike } from 'lucide-react';
+import { Building2, Bike, ShoppingBag, BarChart2 } from 'lucide-react';
 import { useLocaleStore } from '@/lib/store/locale';
 
 export function AdminNav() {
@@ -9,8 +9,10 @@ export function AdminNav() {
   const t = useLocaleStore(s => s.t);
 
   const TABS = [
-    { href: '/admin/orgs',     label: t.adminNav.orgs,     Icon: Building2 },
-    { href: '/admin/couriers', label: t.adminNav.couriers, Icon: Bike },
+    { href: '/admin/orgs',      label: t.adminNav.orgs,      Icon: Building2 },
+    { href: '/admin/couriers',  label: t.adminNav.couriers,  Icon: Bike },
+    { href: '/admin/orders',    label: 'Заказы',             Icon: ShoppingBag },
+    { href: '/admin/analytics', label: 'Аналитика',          Icon: BarChart2 },
   ];
 
   return (

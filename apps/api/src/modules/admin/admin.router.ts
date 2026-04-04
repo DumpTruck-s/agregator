@@ -26,3 +26,19 @@ adminRouter.patch('/orgs/:id/activate', ...adminOnly, async (req, res, next) => 
 adminRouter.get('/couriers', ...adminOnly, async (_req, res, next) => {
   try { res.json(await service.listCouriers()); } catch (e) { next(e); }
 });
+
+adminRouter.patch('/couriers/:id/block', ...adminOnly, async (req, res, next) => {
+  try { res.json(await service.blockCourier(req.params.id)); } catch (e) { next(e); }
+});
+
+adminRouter.patch('/couriers/:id/unblock', ...adminOnly, async (req, res, next) => {
+  try { res.json(await service.unblockCourier(req.params.id)); } catch (e) { next(e); }
+});
+
+adminRouter.get('/orders', ...adminOnly, async (_req, res, next) => {
+  try { res.json(await service.listAllOrders()); } catch (e) { next(e); }
+});
+
+adminRouter.get('/analytics', ...adminOnly, async (_req, res, next) => {
+  try { res.json(await service.getAnalytics()); } catch (e) { next(e); }
+});

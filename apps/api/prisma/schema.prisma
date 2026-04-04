@@ -32,6 +32,7 @@ model User {
   role         Role     @default(CUSTOMER)
   name         String
   phone        String?
+  isBlocked    Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   ownedOrgs    Organization[]

@@ -3,9 +3,14 @@ import { NotFoundError, ForbiddenError } from '../../shared/errors';
 import type { CreateOrgDto, CreateTradePointDto } from '@delivery/shared';
 
 export async function createOrg(ownerId: string, dto: CreateOrgDto) {
-  return prisma.organization.create({
-    data: { ...dto, ownerId },
-  });
+  return prisma.organization.create({ data: { ...dto, ownerId } });
+}
+
+export async function updateOrg(ownerId: string, orgId: string, dto: Partial<Pick<CreateOrgDto, 'name' | 'description'> & { logo?: string }>) {
+  const org = await prisma.organization.findUnique({ where: { id: orgId } });
+  if (!org) throw new NotFoundError('Organization');
+  if (org.ownerId !== ownerId) throw new ForbiddenError();
+  return prisma.organization.update({ where: { id: orgId }, data: dto });
 }
 
 export async function getMyOrg(ownerId: string) {
@@ -36,4 +41,11 @@ export async function createTradePoint(ownerId: string, orgId: string, dto: Crea
   if (!org) throw new NotFoundError('Organization');
   if (org.ownerId !== ownerId) throw new ForbiddenError();
   return prisma.tradePoint.create({ data: { ...dto, orgId } });
+}
+
+export async function deleteTradePoint(ownerId: string, tradePointId: string) {
+  const tp = await prisma.tradePoint.findUnique({ where: { id: tradePointId }, include: { org: true } });
+  if (!tp) throw new NotFoundError('TradePoint');
+  if (tp.org.ownerId !== ownerId) throw new ForbiddenError();
+  return prisma.tradePoint.delete({ where: { id: tradePointId } });
 }
