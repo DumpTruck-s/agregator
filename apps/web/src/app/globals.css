@@ -2,70 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Цветовые токены ────────────────────────────────────────────────── */
+/* ─── Цветовые токены ─────────────────────────────────────────────────── */
 :root {
-  --bg:        #f8fafc;
-  --card:      #ffffff;
-  --muted:     #f1f5f9;
-  --border:    #e2e8f0;
-  --text:      #0f172a;
-  --subtle:    #64748b;
-  --accent:    #0f172a;
-  --accent-fg: #ffffff;
+  --bg:          #F7F8FF;
+  --card:        #FFFFFF;
+  --muted:       #EEF0FF;
+  --border:      #DDE1F8;
+  --text:        #0C0F2E;
+  --subtle:      #5A62A0;
+  --accent:      #2563EB;
+  --accent-fg:   #FFFFFF;
+  --accent-muted: rgba(37,99,235,.10);
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.05);
+  --shadow-sm: 0 1px 3px rgba(10,15,60,.06), 0 1px 2px rgba(10,15,60,.04);
+  --shadow-md: 0 4px 16px rgba(10,15,60,.10), 0 2px 4px rgba(10,15,60,.05);
+  --shadow-lg: 0 12px 40px rgba(10,15,60,.14), 0 4px 8px rgba(10,15,60,.06);
 }
 
 .dark {
-  --bg:        #0b1120;
-  --card:      #131c2e;
-  --muted:     #1e293b;
-  --border:    #1e293b;
-  --text:      #f1f5f9;
-  --subtle:    #94a3b8;
-  --accent:    #f1f5f9;
-  --accent-fg: #0f172a;
+  --bg:          #06060A;
+  --card:        #0E0E14;
+  --muted:       #141420;
+  --border:      #1E1E2E;
+  --text:        #EEEEFF;
+  --subtle:      #8888B8;
+  --accent:      #B06EFF;
+  --accent-fg:   #06060A;
+  --accent-muted: rgba(176,110,255,.15);
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.4);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,.5);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.65);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,.75);
 }
 
-/* ─── Базовые стили ──────────────────────────────────────────────────── */
+/* ─── Базовые стили ───────────────────────────────────────────────────── */
 * { @apply border-border; }
 
 body {
   background-color: var(--bg);
   color: var(--text);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-sans), ui-rounded, system-ui, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Скроллбар */
-::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--subtle); }
 
-/* ─── Утилиты ────────────────────────────────────────────────────────── */
+/* ─── Утилиты ─────────────────────────────────────────────────────────── */
 @layer utilities {
   .shadow-theme-sm { box-shadow: var(--shadow-sm); }
   .shadow-theme-md { box-shadow: var(--shadow-md); }
   .shadow-theme-lg { box-shadow: var(--shadow-lg); }
 
-  /* Стеклянный эффект */
   .glass {
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(247,248,255,0.88);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
   }
   .dark .glass {
-    background: rgba(19,28,46,0.75);
+    background: rgba(6,6,10,0.92);
   }
 
-  /* Анимация с задержкой для списков */
+  .bg-accent-muted { background: var(--accent-muted); }
+
   .stagger-1 { animation-delay: 0.05s; }
   .stagger-2 { animation-delay: 0.10s; }
   .stagger-3 { animation-delay: 0.15s; }

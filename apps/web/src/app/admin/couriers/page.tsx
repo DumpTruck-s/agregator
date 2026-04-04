@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { Bike } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useLocaleStore } from '@/lib/store/locale';
 
 interface Shift {
   id: string;
@@ -21,6 +23,8 @@ export default function AdminCouriersPage() {
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active'>('all');
+  const t = useLocaleStore(s => s.t);
+  const ac = t.admin.couriers;
 
   useEffect(() => {
     api.get<Courier[]>('/api/admin/couriers')
@@ -34,21 +38,21 @@ export default function AdminCouriersPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 animate-fade-in">
-      <h1 className="text-xl font-bold text-text mb-6">Курьеры</h1>
+      <h1 className="font-display text-2xl font-semibold text-text mb-6">{ac.title}</h1>
 
       <div className="flex gap-1 mb-6 bg-muted rounded-xl p-1 w-fit">
         {([
-          { key: 'all',    label: `Все (${couriers.length})` },
-          { key: 'active', label: `На смене (${active.length})` },
-        ] as const).map(t => (
+          { key: 'all',    label: `${ac.filterAll} (${couriers.length})` },
+          { key: 'active', label: `${ac.filterActive} (${active.length})` },
+        ] as const).map(({ key, label }) => (
           <button
-            key={t.key}
-            onClick={() => setFilter(t.key)}
+            key={key}
+            onClick={() => setFilter(key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              filter === t.key ? 'bg-card shadow text-text' : 'text-subtle hover:text-text'
+              filter === key ? 'bg-card shadow text-text' : 'text-subtle hover:text-text'
             }`}
           >
-            {t.label}
+            {label}
           </button>
         ))}
       </div>
@@ -61,8 +65,10 @@ export default function AdminCouriersPage() {
 
       {!loading && shown.length === 0 && (
         <div className="text-center py-16 text-subtle">
-          <p className="text-4xl mb-3">🛵</p>
-          <p>{filter === 'active' ? 'Нет активных курьеров' : 'Нет курьеров'}</p>
+          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+            <Bike className="w-5 h-5 text-subtle" strokeWidth={1.5} />
+          </div>
+          <p>{filter === 'active' ? ac.noActive : ac.none}</p>
         </div>
       )}
 
@@ -75,12 +81,12 @@ export default function AdminCouriersPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold text-text">{courier.name}</p>
                   {activeShift ? (
-                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full">
-                      На смене
+                    <span className="text-xs bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                      {ac.onShift}
                     </span>
                   ) : (
                     <span className="text-xs bg-muted text-subtle px-2 py-0.5 rounded-full">
-                      Не в смене
+                      {ac.notOnShift}
                     </span>
                   )}
                 </div>
@@ -89,14 +95,14 @@ export default function AdminCouriersPage() {
                 </p>
                 {activeShift && (
                   <p className="text-xs text-subtle/70 mt-0.5">
-                    Смена с {new Date(activeShift.startedAt).toLocaleTimeString('ru-RU', {
+                    {ac.shiftFrom} {new Date(activeShift.startedAt).toLocaleTimeString(t.dateLocale, {
                       hour: '2-digit', minute: '2-digit',
-                    })} · радиус {activeShift.deliveryRadiusKm} км
+                    })} · {ac.radius} {activeShift.deliveryRadiusKm} {t.common.km}
                   </p>
                 )}
               </div>
               <p className="text-xs text-subtle/60 shrink-0">
-                С {new Date(courier.createdAt).toLocaleDateString('ru-RU', {
+                {ac.since} {new Date(courier.createdAt).toLocaleDateString(t.dateLocale, {
                   day: 'numeric', month: 'short', year: 'numeric',
                 })}
               </p>

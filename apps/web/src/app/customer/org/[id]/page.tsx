@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { MapPin, Utensils, AlertTriangle, Plus, Minus } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useCartStore } from '@/lib/store/cart';
+import { useLocaleStore } from '@/lib/store/locale';
 
 interface TradePoint { id: string; address: string }
 interface OrgDetails  { id: string; name: string; description?: string; logo?: string; tradePoints: TradePoint[] }
@@ -15,6 +17,7 @@ export default function OrgMenuPage() {
   const [menu, setMenu] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const t = useLocaleStore(s => s.t);
 
   const { items: cartItems, addItem, decreaseItem } = useCartStore();
 
@@ -49,12 +52,14 @@ export default function OrgMenuPage() {
     </div>
   );
 
-  if (!org) return <div className="p-6 text-subtle text-center">Ресторан не найден</div>;
+  if (!org) return <div className="p-6 text-subtle text-center">{t.orgMenu.notFound}</div>;
 
   if (!org.tradePoints.length) return (
     <div className="max-w-2xl mx-auto p-6 text-center text-subtle py-16">
-      <p className="text-3xl mb-2">⚠️</p>
-      <p>Нет доступных точек выдачи</p>
+      <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+        <AlertTriangle className="w-6 h-6 text-subtle" strokeWidth={1.5} />
+      </div>
+      <p>{t.orgMenu.noPickup}</p>
     </div>
   );
 
@@ -64,15 +69,23 @@ export default function OrgMenuPage() {
     <div className="max-w-2xl mx-auto pb-24 animate-fade-in">
       {/* Header */}
       <div className="bg-card border-b border-border px-6 py-5">
-        <div className="text-5xl mb-2">{org.logo || '🍽️'}</div>
-        <h1 className="text-2xl font-bold text-text">{org.name}</h1>
+        <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3 overflow-hidden">
+          {org.logo
+            ? <img src={org.logo} alt={org.name} className="w-full h-full object-cover" />
+            : <Utensils className="w-6 h-6 text-subtle" strokeWidth={1.5} />
+          }
+        </div>
+        <h1 className="font-display text-2xl font-semibold text-text">{org.name}</h1>
         {org.description && <p className="text-sm text-subtle mt-1">{org.description}</p>}
-        <p className="text-xs text-subtle mt-2">📍 {org.tradePoints[0].address}</p>
+        <div className="flex items-center gap-1.5 mt-2 text-subtle">
+          <MapPin className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
+          <p className="text-xs">{org.tradePoints[0].address}</p>
+        </div>
       </div>
 
       {/* Category tabs */}
       {visibleCategories.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto px-6 py-3 bg-card border-b border-border sticky top-[57px] z-10">
+        <div className="flex gap-2 overflow-x-auto px-6 py-3 bg-card border-b border-border sticky top-[57px] z-10 scrollbar-hide">
           {visibleCategories.map(cat => (
             <button
               key={cat.id}
@@ -95,7 +108,7 @@ export default function OrgMenuPage() {
           .filter(cat => !activeCategory || visibleCategories.length <= 1 || cat.id === activeCategory)
           .map((cat, ci) => (
             <section key={cat.id} className="animate-slide-up" style={{ animationDelay: `${ci * 0.05}s` }}>
-              <h2 className="text-lg font-semibold text-text mb-3">{cat.name}</h2>
+              <h2 className="font-display text-xl font-semibold text-text mb-3">{cat.name}</h2>
               <div className="space-y-3">
                 {cat.items.map((item, ii) => {
                   const qty = getQty(item.id);
@@ -116,24 +129,24 @@ export default function OrgMenuPage() {
                       {qty === 0 ? (
                         <button
                           onClick={() => handleAdd(item)}
-                          className="shrink-0 w-9 h-9 rounded-full bg-accent text-accent-fg flex items-center justify-center text-xl font-light hover:opacity-90 hover:scale-110 active:scale-90 transition-all duration-200"
+                          className="shrink-0 w-9 h-9 rounded-full bg-accent text-accent-fg flex items-center justify-center hover:opacity-90 hover:scale-110 active:scale-90 transition-all duration-200"
                         >
-                          +
+                          <Plus className="w-4 h-4" strokeWidth={2.5} />
                         </button>
                       ) : (
                         <div className="flex items-center gap-2 shrink-0 animate-scale-in">
                           <button
                             onClick={() => decreaseItem(item.id)}
-                            className="w-9 h-9 rounded-full border-2 border-accent text-text flex items-center justify-center text-xl hover:bg-muted active:scale-90 transition-all duration-200"
+                            className="w-9 h-9 rounded-full border-2 border-accent text-text flex items-center justify-center hover:bg-muted active:scale-90 transition-all duration-200"
                           >
-                            −
+                            <Minus className="w-4 h-4" strokeWidth={2.5} />
                           </button>
                           <span className="w-5 text-center font-bold text-text">{qty}</span>
                           <button
                             onClick={() => handleAdd(item)}
-                            className="w-9 h-9 rounded-full bg-accent text-accent-fg flex items-center justify-center text-xl hover:opacity-90 active:scale-90 transition-all duration-200"
+                            className="w-9 h-9 rounded-full bg-accent text-accent-fg flex items-center justify-center hover:opacity-90 active:scale-90 transition-all duration-200"
                           >
-                            +
+                            <Plus className="w-4 h-4" strokeWidth={2.5} />
                           </button>
                         </div>
                       )}

@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { ClipboardList, CheckSquare } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useLocaleStore } from '@/lib/store/locale';
 import { StatusBadge } from '@/components/orders/status-badge';
 import { getSocket, connectSocket, joinOrderRoom } from '@/lib/socket';
 import type { OrderStatus } from '@delivery/shared';
@@ -11,11 +13,6 @@ interface Order {
   items: { quantity: number; price: number; menuItem: { name: string } }[];
 }
 
-const OWNER_ACTION: Partial<Record<OrderStatus, { label: string; next: OrderStatus }>> = {
-  ACCEPTED: { label: 'Начать готовить',  next: 'COOKING' },
-  COOKING:  { label: 'Готово к выдаче', next: 'READY'   },
-};
-
 const ACTIVE: OrderStatus[] = ['CREATED','ACCEPTED','COOKING','READY'];
 
 export default function OwnerOrdersPage() {
@@ -23,6 +20,13 @@ export default function OwnerOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab]         = useState<'active'|'done'>('active');
   const [updating, setUpdating] = useState<string | null>(null);
+  const t = useLocaleStore(s => s.t);
+  const oo = t.owner.orders;
+
+  const OWNER_ACTION: Partial<Record<OrderStatus, { label: string; next: OrderStatus }>> = {
+    ACCEPTED: { label: oo.actionStartCooking, next: 'COOKING' },
+    COOKING:  { label: oo.actionReady,        next: 'READY'   },
+  };
 
   async function load() {
     try { setOrders(await api.get<Order[]>('/api/orders/org')); }
@@ -48,7 +52,7 @@ export default function OwnerOrdersPage() {
     try {
       await api.patch(`/api/orders/${orderId}/status`, { status });
       setOrders(p => p.map(o => o.id === orderId ? { ...o, status } : o));
-    } catch (e) { alert(e instanceof Error ? e.message : 'Ошибка'); }
+    } catch (e) { alert(e instanceof Error ? e.message : oo.error); }
     finally { setUpdating(null); }
   }
 
@@ -59,10 +63,10 @@ export default function OwnerOrdersPage() {
   return (
     <div className="max-w-2xl mx-auto p-6 animate-fade-in">
       <div className="flex gap-1 mb-6 bg-muted rounded-xl p-1 w-fit">
-        {(['active','done'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === t ? 'bg-card shadow text-text' : 'text-subtle hover:text-text'}`}>
-            {t === 'active' ? `Активные${active.length ? ` (${active.length})` : ''}` : 'Завершённые'}
+        {(['active','done'] as const).map(tabKey => (
+          <button key={tabKey} onClick={() => setTab(tabKey)}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === tabKey ? 'bg-card shadow text-text' : 'text-subtle hover:text-text'}`}>
+            {tabKey === 'active' ? `${oo.tabActive}${active.length ? ` (${active.length})` : ''}` : oo.tabDone}
           </button>
         ))}
       </div>
@@ -71,8 +75,13 @@ export default function OwnerOrdersPage() {
 
       {!loading && shown.length === 0 && (
         <div className="text-center py-16 text-subtle">
-          <p className="text-4xl mb-3">{tab === 'active' ? '🟢' : '📋'}</p>
-          <p>{tab === 'active' ? 'Нет активных заказов' : 'Нет завершённых'}</p>
+          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+            {tab === 'active'
+              ? <ClipboardList className="w-5 h-5 text-subtle" strokeWidth={1.5} />
+              : <CheckSquare  className="w-5 h-5 text-subtle" strokeWidth={1.5} />
+            }
+          </div>
+          <p>{tab === 'active' ? oo.noActiveOrders : oo.noDoneOrders}</p>
         </div>
       )}
 
@@ -98,12 +107,12 @@ export default function OwnerOrdersPage() {
               </div>
               <div className="px-4 py-3 border-t border-border flex items-center justify-between">
                 <p className="text-xs text-subtle">
-                  {new Date(order.createdAt).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}
+                  {new Date(order.createdAt).toLocaleString(t.dateLocale, { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}
                 </p>
                 {action && (
                   <button onClick={() => updateStatus(order.id, action.next)} disabled={updating === order.id}
                     className="bg-accent text-accent-fg text-xs rounded-xl px-4 py-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">
-                    {updating === order.id ? '...' : action.label}
+                    {updating === order.id ? t.common.unknown : action.label}
                   </button>
                 )}
               </div>
