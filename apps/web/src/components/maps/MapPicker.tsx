@@ -20,25 +20,65 @@ export interface MapPoint {
   address?: string;
 }
 
-interface NominatimResult {
-  lat: string;
-  lon: string;
-  display_name: string;
+interface PhotonFeature {
+  geometry: { coordinates: [number, number] };
+  properties: {
+    name?: string;
+    street?: string;
+    housenumber?: string;
+    district?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+}
+
+interface PhotonResponse {
+  features: PhotonFeature[];
+}
+
+function photonAddress(p: PhotonFeature['properties']): string {
+  const parts = [
+    p.name,
+    p.street && p.housenumber ? `${p.street}, ${p.housenumber}` : p.street,
+    p.district,
+    p.city,
+    p.state,
+    p.country,
+  ].filter(Boolean);
+  return parts.join(', ');
+}
+
+async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=ru`,
+      { headers: { 'Accept': 'application/json' } }
+    );
+    const data: PhotonResponse = await res.json();
+    if (data.features?.[0]) return photonAddress(data.features[0].properties) || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  } catch {}
+  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+}
+
+async function searchPlaces(query: string): Promise<{ label: string; lat: number; lng: number }[]> {
+  const res = await fetch(
+    `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=ru&limit=6`,
+    { headers: { 'Accept': 'application/json' } }
+  );
+  const data: PhotonResponse = await res.json();
+  return (data.features ?? []).map(f => ({
+    label: photonAddress(f.properties),
+    lat: f.geometry.coordinates[1],
+    lng: f.geometry.coordinates[0],
+  })).filter(r => r.label);
 }
 
 function ClickHandler({ onPick }: { onPick: (point: MapPoint) => void }) {
   useMapEvents({
     async click(e) {
       const { lat, lng } = e.latlng;
-      let address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-          { headers: { 'Accept-Language': 'ru' } }
-        );
-        const data = await res.json();
-        if (data.display_name) address = data.display_name;
-      } catch {}
+      const address = await reverseGeocode(lat, lng);
       onPick({ lat, lng, address });
     },
   });
@@ -69,8 +109,8 @@ export function MapPicker({
   height = '300px',
 }: MapPickerProps) {
   const mapRef = useRef<L.Map | null>(null);
-  const [query, setQuery]       = useState('');
-  const [results, setResults]   = useState<NominatimResult[]>([]);
+  const [query, setQuery]     = useState('');
+  const [results, setResults] = useState<{ label: string; lat: number; lng: number }[]>([]);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -79,28 +119,15 @@ export function MapPicker({
     if (!q.trim()) { setResults([]); return; }
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5`,
-          { headers: { 'Accept-Language': 'ru' } }
-        );
-        const data: NominatimResult[] = await res.json();
-        setResults(data);
-      } catch {}
+      try { setResults(await searchPlaces(q)); }
+      catch { setResults([]); }
       finally { setSearching(false); }
     }, 500);
   }, []);
 
-  function pickResult(r: NominatimResult) {
-    const lat = parseFloat(r.lat);
-    const lng = parseFloat(r.lon);
-    onChange({ lat, lng, address: r.display_name });
-    setQuery(r.display_name);
-    setResults([]);
-  }
-
-  function clearSearch() {
-    setQuery('');
+  function pickResult(r: { label: string; lat: number; lng: number }) {
+    onChange({ lat: r.lat, lng: r.lng, address: r.label });
+    setQuery(r.label);
     setResults([]);
   }
 
@@ -117,24 +144,25 @@ export function MapPicker({
             type="text"
             value={query}
             onChange={e => { setQuery(e.target.value); search(e.target.value); }}
-            placeholder="Поиск по адресу или городу..."
+            placeholder="Поиск: улица, город, координаты..."
             className="flex-1 bg-transparent text-sm text-text placeholder:text-subtle/60 focus:outline-none"
           />
           {query && (
-            <button onClick={clearSearch} className="text-subtle hover:text-text transition-colors">
+            <button onClick={() => { setQuery(''); setResults([]); }} className="text-subtle hover:text-text transition-colors">
               <X className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
           )}
         </div>
+
         {results.length > 0 && (
           <div className="absolute z-[1000] top-full mt-1 left-0 right-0 bg-card border border-border rounded-xl shadow-theme-md overflow-hidden">
             {results.map((r, i) => (
               <button
                 key={i}
                 onClick={() => pickResult(r)}
-                className="w-full text-left px-3 py-2.5 text-sm text-text hover:bg-muted transition-colors border-b border-border last:border-0 truncate"
+                className="w-full text-left px-3 py-2.5 text-sm text-text hover:bg-muted transition-colors border-b border-border last:border-0"
               >
-                {r.display_name}
+                <span className="line-clamp-1">{r.label}</span>
               </button>
             ))}
           </div>
