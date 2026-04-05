@@ -31,8 +31,11 @@ export async function getOrgById(id: string) {
 
 export async function listOrgs() {
   return prisma.organization.findMany({
-    where: { isActive: true, isVerified: true },
-    select: { id: true, name: true, description: true, logo: true },
+    where: { isActive: true },
+    select: {
+      id: true, name: true, description: true, logo: true,
+      tradePoints: { select: { id: true, lat: true, lng: true, deliveryRadiusKm: true } },
+    },
   });
 }
 

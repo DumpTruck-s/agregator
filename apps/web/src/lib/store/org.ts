@@ -20,6 +20,7 @@ interface OrgStore {
   loading: boolean;
   fetch: () => Promise<void>;
   setOrg: (org: OrgDetails) => void;
+  toggleItem: (itemId: string) => void;
 }
 
 export const useOrgStore = create<OrgStore>((set) => ({
@@ -39,4 +40,19 @@ export const useOrgStore = create<OrgStore>((set) => ({
   },
 
   setOrg(org) { set({ org }); },
+
+  toggleItem(itemId) {
+    set(s => {
+      if (!s.org) return s;
+      return {
+        org: {
+          ...s.org,
+          categories: s.org.categories.map(c => ({
+            ...c,
+            items: c.items.map(i => i.id === itemId ? { ...i, isAvailable: !i.isAvailable } : i),
+          })),
+        },
+      };
+    });
+  },
 }));

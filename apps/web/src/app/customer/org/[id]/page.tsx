@@ -8,7 +8,7 @@ import { useLocaleStore } from '@/lib/store/locale';
 
 interface TradePoint { id: string; address: string }
 interface OrgDetails  { id: string; name: string; description?: string; logo?: string; tradePoints: TradePoint[] }
-interface MenuItem    { id: string; name: string; price: number; description?: string }
+interface MenuItem    { id: string; name: string; price: number; description?: string; image?: string }
 interface Category    { id: string; name: string; items: MenuItem[] }
 
 export default function OrgMenuPage() {
@@ -115,9 +115,12 @@ export default function OrgMenuPage() {
                   return (
                     <div
                       key={item.id}
-                      className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between gap-4 hover:shadow-theme-sm hover:border-accent/20 transition-all duration-200 animate-slide-up"
+                      className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 hover:shadow-theme-sm hover:border-accent/20 transition-all duration-200 animate-slide-up"
                       style={{ animationDelay: `${(ci * 4 + ii) * 0.04}s` }}
                     >
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-text">{item.name}</p>
                         {item.description && (

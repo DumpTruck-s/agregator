@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { MapPin, X, Plus } from 'lucide-react';
+import { MapPin, X, Plus, UtensilsCrossed, Store } from 'lucide-react';
 import { useOrgStore, type OrgCategory } from '@/lib/store/org';
 import { useLocaleStore } from '@/lib/store/locale';
 import { api } from '@/lib/api';
@@ -147,10 +147,15 @@ function AddItemForm({ orgId, categoryId, onAdded }: { orgId: string; categoryId
 function CategorySection({ cat, orgId, onRefresh }: { cat: OrgCategory; orgId: string; onRefresh: () => void }) {
   const t = useLocaleStore(s => s.t);
   const om = t.owner.menu;
+  const toggleItemOptimistic = useOrgStore(s => s.toggleItem);
 
-  async function toggleItem(itemId: string) {
-    try { await api.patch(`/api/orgs/items/${itemId}/toggle`, {}); onRefresh(); }
-    catch (e) { alert(e instanceof Error ? e.message : t.common.error); }
+  async function handleToggle(itemId: string) {
+    toggleItemOptimistic(itemId);
+    try { await api.patch(`/api/orgs/items/${itemId}/toggle`, {}); }
+    catch (e) {
+      toggleItemOptimistic(itemId); // revert
+      alert(e instanceof Error ? e.message : t.common.error);
+    }
   }
 
   return (
@@ -160,15 +165,20 @@ function CategorySection({ cat, orgId, onRefresh }: { cat: OrgCategory; orgId: s
         {cat.items.length === 0 && <p className="px-4 py-3 text-sm text-subtle">{om.noItems}</p>}
         {cat.items.map(item => (
           <div key={item.id} className={`flex items-center justify-between px-4 py-3 transition-opacity ${!item.isAvailable ? 'opacity-40' : ''}`}>
+            {item.image && (
+              <img src={item.image} alt={item.name} className="w-10 h-10 rounded-lg object-cover shrink-0 mr-3" />
+            )}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-text">{item.name}</p>
               {item.description && <p className="text-xs text-subtle truncate">{item.description}</p>}
             </div>
             <div className="flex items-center gap-2 ml-2 shrink-0">
               <span className="font-semibold text-sm text-text">{item.price} ₽</span>
-              <button onClick={() => toggleItem(item.id)}
-                className={`relative w-10 h-6 rounded-full transition-colors duration-300 ${item.isAvailable ? 'bg-accent' : 'bg-border'}`}>
-                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${item.isAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
+              <button
+                onClick={() => handleToggle(item.id)}
+                className={`relative w-10 h-6 rounded-full overflow-hidden transition-colors duration-300 ${item.isAvailable ? 'bg-accent' : 'bg-border'}`}
+              >
+                <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${item.isAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
               </button>
             </div>
           </div>
@@ -185,6 +195,7 @@ export default function OwnerMenuPage() {
   const { org, loading, fetch } = useOrgStore();
   const t = useLocaleStore(s => s.t);
   const om = t.owner.menu;
+  const [tab, setTab] = useState<'menu' | 'points'>('menu');
 
   useEffect(() => { fetch(); }, []);
 
@@ -197,42 +208,56 @@ export default function OwnerMenuPage() {
   if (!org) return <div className="p-6 text-subtle text-center">{om.noOrg}</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6 animate-fade-in">
-      <section>
-        <h2 className="font-semibold text-text mb-3">{om.tradePoints}</h2>
-        {org.tradePoints.length === 0
-          ? <p className="text-sm text-subtle mb-3">{om.noTradePoints}</p>
-          : (
-            <div className="space-y-3 mb-3">
-              {org.tradePoints.map(tp => (
-                <div key={tp.id} className="bg-card border border-border rounded-xl overflow-hidden">
-                  <div className="px-4 py-3 text-sm flex justify-between text-text">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-subtle shrink-0" strokeWidth={2} />
-                      <span>{tp.address}</span>
-                    </div>
-                    <span className="text-subtle">{om.radius} {tp.deliveryRadiusKm} {t.common.km}</span>
-                  </div>
-                  <MapZoneView zones={[{ lat: tp.lat, lng: tp.lng, radiusKm: tp.deliveryRadiusKm }]} height="200px" />
-                </div>
-              ))}
-            </div>
-          )
-        }
-        <AddTradePointForm orgId={org.id} onAdded={fetch} />
-      </section>
+    <div className="max-w-2xl mx-auto p-6 space-y-5 animate-fade-in">
+      {/* Tabs */}
+      <div className="flex gap-1 bg-muted rounded-2xl p-1">
+        <button
+          onClick={() => setTab('menu')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${tab === 'menu' ? 'bg-card shadow-theme-sm text-text' : 'text-subtle hover:text-text'}`}
+        >
+          <UtensilsCrossed className="w-4 h-4" strokeWidth={2} />
+          {om.menuSection}
+        </button>
+        <button
+          onClick={() => setTab('points')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${tab === 'points' ? 'bg-card shadow-theme-sm text-text' : 'text-subtle hover:text-text'}`}
+        >
+          <Store className="w-4 h-4" strokeWidth={2} />
+          {om.tradePoints}
+        </button>
+      </div>
 
-      <section>
-        <h2 className="font-semibold text-text mb-3">{om.menuSection}</h2>
-        <div className="space-y-4">
+      {tab === 'menu' && (
+        <section className="space-y-4 animate-fade-in">
           {org.categories.map((cat, i) => (
             <div key={cat.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
               <CategorySection cat={cat} orgId={org.id} onRefresh={fetch} />
             </div>
           ))}
           <AddCategoryForm orgId={org.id} onAdded={fetch} />
-        </div>
-      </section>
+        </section>
+      )}
+
+      {tab === 'points' && (
+        <section className="space-y-3 animate-fade-in">
+          {org.tradePoints.length === 0
+            ? <p className="text-sm text-subtle">{om.noTradePoints}</p>
+            : org.tradePoints.map(tp => (
+              <div key={tp.id} className="bg-card border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-3 text-sm flex justify-between text-text">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-subtle shrink-0" strokeWidth={2} />
+                    <span>{tp.address}</span>
+                  </div>
+                  <span className="text-subtle">{om.radius} {tp.deliveryRadiusKm} {t.common.km}</span>
+                </div>
+                <MapZoneView zones={[{ lat: tp.lat, lng: tp.lng, radiusKm: tp.deliveryRadiusKm }]} height="200px" />
+              </div>
+            ))
+          }
+          <AddTradePointForm orgId={org.id} onAdded={fetch} />
+        </section>
+      )}
     </div>
   );
 }
