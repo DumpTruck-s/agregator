@@ -27,3 +27,11 @@ export function joinOrderRoom(orderId: string) {
 export function joinZone(zone: string) {
   getSocket().emit('join:zone', zone);
 }
+
+export function joinSupportRoom(userId: string) {
+  getSocket().emit('join:support', userId);
+}
+
+export function joinAdminSupport() {
+  getSocket().emit('join:support:admin');
+}

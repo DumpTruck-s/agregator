@@ -35,10 +35,22 @@ model User {
   isBlocked    Boolean  @default(false)
   createdAt    DateTime @default(now())
 
-  ownedOrgs    Organization[]
-  orders       Order[]        @relation("CustomerOrders")
-  courierOrders Order[]       @relation("CourierOrders")
-  shifts       CourierShift[]
+  ownedOrgs        Organization[]
+  orders           Order[]          @relation("CustomerOrders")
+  courierOrders    Order[]          @relation("CourierOrders")
+  shifts           CourierShift[]
+  supportMessages  SupportMessage[]
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  fromAdmin Boolean  @default(false)
+  text      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Organization {

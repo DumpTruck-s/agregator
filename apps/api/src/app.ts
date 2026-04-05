@@ -10,6 +10,7 @@ import { orderRouter } from './modules/order/order.router';
 import { courierRouter } from './modules/courier/courier.router';
 import { adminRouter } from './modules/admin/admin.router';
 import { uploadRouter } from './modules/upload/upload.router';
+import { supportRouter } from './modules/support/support.router';
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,6 +28,7 @@ app.use('/api/orders', orderRouter);
 app.use('/api/courier', courierRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/support', supportRouter);
 
 app.use(errorHandler);
 
