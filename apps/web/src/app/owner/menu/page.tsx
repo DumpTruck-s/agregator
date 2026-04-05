@@ -1,15 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { MapPin, X, Plus, UtensilsCrossed, Store } from 'lucide-react';
+import { MapPin, X, Plus } from 'lucide-react';
 import { useOrgStore, type OrgCategory } from '@/lib/store/org';
 import { useLocaleStore } from '@/lib/store/locale';
 import { api } from '@/lib/api';
 import { ImageUpload } from '@/components/ui/image-upload';
 import type { MapPoint } from '@/components/maps/MapPicker';
 
-const MapPicker  = dynamic(() => import('@/components/maps/MapPicker').then(m => m.MapPicker),    { ssr: false, loading: () => <div className="h-[300px] bg-muted rounded-xl animate-pulse" /> });
-const MapZoneView = dynamic(() => import('@/components/maps/MapZoneView').then(m => m.MapZoneView), { ssr: false, loading: () => <div className="h-[250px] bg-muted rounded-xl animate-pulse" /> });
+const MapPicker = dynamic(() => import('@/components/maps/MapPicker').then(m => m.MapPicker), { ssr: false, loading: () => <div className="h-[300px] bg-muted rounded-xl animate-pulse" /> });
 
 const INPUT = 'border border-border bg-muted rounded-xl px-3.5 py-2.5 text-sm text-text placeholder:text-subtle/60 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent transition-all w-full';
 
@@ -195,7 +194,6 @@ export default function OwnerMenuPage() {
   const { org, loading, fetch } = useOrgStore();
   const t = useLocaleStore(s => s.t);
   const om = t.owner.menu;
-  const [tab, setTab] = useState<'menu' | 'points'>('menu');
 
   useEffect(() => { fetch(); }, []);
 
@@ -208,56 +206,13 @@ export default function OwnerMenuPage() {
   if (!org) return <div className="p-6 text-subtle text-center">{om.noOrg}</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-5 animate-fade-in">
-      {/* Tabs */}
-      <div className="flex gap-1 bg-muted rounded-2xl p-1">
-        <button
-          onClick={() => setTab('menu')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${tab === 'menu' ? 'bg-card shadow-theme-sm text-text' : 'text-subtle hover:text-text'}`}
-        >
-          <UtensilsCrossed className="w-4 h-4" strokeWidth={2} />
-          {om.menuSection}
-        </button>
-        <button
-          onClick={() => setTab('points')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${tab === 'points' ? 'bg-card shadow-theme-sm text-text' : 'text-subtle hover:text-text'}`}
-        >
-          <Store className="w-4 h-4" strokeWidth={2} />
-          {om.tradePoints}
-        </button>
-      </div>
-
-      {tab === 'menu' && (
-        <section className="space-y-4 animate-fade-in">
-          {org.categories.map((cat, i) => (
-            <div key={cat.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
-              <CategorySection cat={cat} orgId={org.id} onRefresh={fetch} />
-            </div>
-          ))}
-          <AddCategoryForm orgId={org.id} onAdded={fetch} />
-        </section>
-      )}
-
-      {tab === 'points' && (
-        <section className="space-y-3 animate-fade-in">
-          {org.tradePoints.length === 0
-            ? <p className="text-sm text-subtle">{om.noTradePoints}</p>
-            : org.tradePoints.map(tp => (
-              <div key={tp.id} className="bg-card border border-border rounded-xl overflow-hidden">
-                <div className="px-4 py-3 text-sm flex justify-between text-text">
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-subtle shrink-0" strokeWidth={2} />
-                    <span>{tp.address}</span>
-                  </div>
-                  <span className="text-subtle">{om.radius} {tp.deliveryRadiusKm} {t.common.km}</span>
-                </div>
-                <MapZoneView zones={[{ lat: tp.lat, lng: tp.lng, radiusKm: tp.deliveryRadiusKm }]} height="200px" />
-              </div>
-            ))
-          }
-          <AddTradePointForm orgId={org.id} onAdded={fetch} />
-        </section>
-      )}
+    <div className="max-w-2xl mx-auto p-6 space-y-4 animate-fade-in">
+      {org.categories.map((cat, i) => (
+        <div key={cat.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
+          <CategorySection cat={cat} orgId={org.id} onRefresh={fetch} />
+        </div>
+      ))}
+      <AddCategoryForm orgId={org.id} onAdded={fetch} />
     </div>
   );
 }

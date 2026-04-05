@@ -1,19 +1,17 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ClipboardList, UtensilsCrossed } from 'lucide-react';
-import { useLocaleStore } from '@/lib/store/locale';
+import { LayoutDashboard, ClipboardList, UtensilsCrossed, MapPin } from 'lucide-react';
+
+const TABS = [
+  { href: '/owner/dashboard', label: 'Главная', Icon: LayoutDashboard },
+  { href: '/owner/orders',    label: 'Заказы',  Icon: ClipboardList },
+  { href: '/owner/menu',      label: 'Меню',    Icon: UtensilsCrossed },
+  { href: '/owner/points',    label: 'Точки',   Icon: MapPin },
+];
 
 export function OwnerNav() {
   const pathname = usePathname();
-  const t = useLocaleStore(s => s.t);
-
-  const TABS = [
-    { href: '/owner/dashboard', label: t.ownerNav.dashboard, Icon: LayoutDashboard },
-    { href: '/owner/orders',    label: t.ownerNav.orders,    Icon: ClipboardList },
-    { href: '/owner/menu',      label: t.ownerNav.menu,      Icon: UtensilsCrossed },
-  ];
-
   return (
     <nav className="hidden sm:flex bg-card border-b border-border px-4 gap-0.5 transition-colors">
       {TABS.map(({ href, label, Icon }) => {

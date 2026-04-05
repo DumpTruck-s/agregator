@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Clock, Package, History, LayoutDashboard, ClipboardList, UtensilsCrossed, Building2, Bike, ShoppingBag, BarChart2, Store, ShoppingCart } from 'lucide-react';
+import { Clock, Package, History, LayoutDashboard, ClipboardList, UtensilsCrossed, Building2, Bike, ShoppingBag, BarChart2, Store, ShoppingCart, MapPin } from 'lucide-react';
 
 const ROLE_TABS = {
   courier: [
@@ -13,6 +13,7 @@ const ROLE_TABS = {
     { href: '/owner/dashboard', label: 'Главная', Icon: LayoutDashboard },
     { href: '/owner/orders',    label: 'Заказы',  Icon: ClipboardList },
     { href: '/owner/menu',      label: 'Меню',    Icon: UtensilsCrossed },
+    { href: '/owner/points',    label: 'Точки',   Icon: MapPin },
   ],
   admin: [
     { href: '/admin/orgs',      label: 'Орги',      Icon: Building2 },
