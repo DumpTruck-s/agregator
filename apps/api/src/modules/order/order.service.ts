@@ -80,6 +80,21 @@ export async function getMyOrders(customerId: string) {
   });
 }
 
+export async function rateOrder(orderId: string, customerId: string, rating: number) {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new NotFoundError('Order');
+  if (order.customerId !== customerId) throw new ForbiddenError('Not your order');
+  if (order.status !== 'DELIVERED') throw new ForbiddenError('Order not delivered yet');
+  if (order.courierRating !== null) throw new ForbiddenError('Already rated');
+  if (!order.courierId) throw new ForbiddenError('No courier assigned');
+  if (rating < 1 || rating > 5) throw new ForbiddenError('Rating must be 1-5');
+
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { courierRating: rating },
+  });
+}
+
 export async function getOrgOrders(ownerId: string) {
   const org = await prisma.organization.findFirst({ where: { ownerId } });
   if (!org) throw new NotFoundError('Organization');

@@ -27,17 +27,50 @@ export async function activateOrg(id: string) {
 }
 
 export async function listCouriers() {
-  return prisma.user.findMany({
-    where: { role: 'COURIER' },
-    select: {
-      id: true, name: true, email: true, phone: true, isBlocked: true, createdAt: true,
-      shifts: {
-        where: { isActive: true },
-        select: { id: true, startedAt: true, deliveryRadiusKm: true, deliveryZoneLat: true, deliveryZoneLng: true },
-        take: 1,
+  const [couriers, deliveredStats, cancelledStats] = await Promise.all([
+    prisma.user.findMany({
+      where: { role: 'COURIER' },
+      select: {
+        id: true, name: true, email: true, phone: true, isBlocked: true, createdAt: true,
+        shifts: {
+          where: { isActive: true },
+          select: { id: true, startedAt: true, deliveryRadiusKm: true },
+          take: 1,
+        },
       },
-    },
-    orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.order.groupBy({
+      by: ['courierId'],
+      where: { status: 'DELIVERED', courierId: { not: null } },
+      _count: { id: true },
+      _sum:   { totalPrice: true },
+    }),
+    prisma.order.groupBy({
+      by: ['courierId'],
+      where: { status: 'CANCELLED', courierId: { not: null } },
+      _count: { id: true },
+    }),
+  ]);
+
+  const courierIds = couriers.map(c => c.id);
+  const ratingStats = await prisma.order.groupBy({
+    by: ['courierId'],
+    where: { status: 'DELIVERED', courierId: { in: courierIds }, courierRating: { not: null } },
+    _avg:   { courierRating: true },
+    _count: { courierRating: true },
+  });
+
+  const dMap = new Map(deliveredStats.map(s => [s.courierId, { count: s._count.id, earnings: s._sum.totalPrice ?? 0 }]));
+  const cMap = new Map(cancelledStats.map(s => [s.courierId, s._count.id]));
+  const rMap = new Map(ratingStats.map(s => [s.courierId, { avg: s._avg.courierRating ?? 0, count: s._count.courierRating }]));
+
+  return couriers.map(c => {
+    const d           = dMap.get(c.id) ?? { count: 0, earnings: 0 };
+    const cancelled   = cMap.get(c.id) ?? 0;
+    const r           = rMap.get(c.id) ?? { avg: 0, count: 0 };
+    const rating      = r.count < 3 ? null : Math.round(r.avg * 10) / 10;
+    return { ...c, stats: { delivered: d.count, earnings: d.earnings, cancelled, rating, ratingCount: r.count } };
   });
 }
 

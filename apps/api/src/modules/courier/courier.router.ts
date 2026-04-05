@@ -22,6 +22,10 @@ courierRouter.get('/shift', async (req, res, next) => {
   try { res.json(await shiftService.getActiveShift(req.user!.sub)); } catch (e) { next(e); }
 });
 
+courierRouter.get('/stats', async (req, res, next) => {
+  try { res.json(await courierService.getCourierStats(req.user!.sub)); } catch (e) { next(e); }
+});
+
 courierRouter.get('/orders/active', async (req, res, next) => {
   try { res.json(await courierService.getActiveOrders(req.user!.sub)); } catch (e) { next(e); }
 });

@@ -2,11 +2,12 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Package, MapPin, X, Clock, CheckCircle2 } from 'lucide-react';
+import { Package, MapPin, X, Clock, CheckCircle2, Star } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useOrdersStore } from '@/lib/store/orders';
 import { useLocaleStore } from '@/lib/store/locale';
 import { StatusBadge } from '@/components/orders/status-badge';
+import { StarPicker, RatingStars } from '@/components/ui/rating-stars';
 import { getSocket, connectSocket, joinOrderRoom } from '@/lib/socket';
 import type { OrderStatus } from '@delivery/shared';
 
@@ -49,6 +50,60 @@ function OrderProgress({ status }: { status: OS }) {
 const ACTIVE_STATUSES: OrderStatus[] = ['CREATED', 'ACCEPTED', 'COOKING', 'READY', 'PICKED_UP', 'DELIVERING'];
 const CANCELLABLE: OrderStatus[] = ['CREATED', 'ACCEPTED', 'COOKING'];
 
+const RATING_LABELS: Record<number, string> = {
+  1: 'Очень плохо',
+  2: 'Плохо',
+  3: 'Нормально',
+  4: 'Хорошо',
+  5: 'Отлично!',
+};
+
+function RateBlock({ orderId }: { orderId: string }) {
+  const setRating = useOrdersStore(s => s.setRating);
+  const [picked, setPicked]   = useState(0);
+  const [saving, setSaving]   = useState(false);
+  const [done, setDone]       = useState(false);
+
+  async function submit() {
+    if (!picked) return;
+    setSaving(true);
+    try {
+      await api.post(`/api/orders/${orderId}/rate`, { rating: picked });
+      setRating(orderId, picked);
+      setDone(true);
+    } catch { /* already rated or other error — silently dismiss */ setDone(true); }
+    finally { setSaving(false); }
+  }
+
+  if (done) return (
+    <div className="flex items-center gap-2 text-sm text-subtle">
+      <Star className="w-4 h-4 text-accent fill-accent" strokeWidth={0} />
+      Спасибо за оценку!
+    </div>
+  );
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-subtle uppercase tracking-wider">Оцените курьера</p>
+      <div className="flex items-center gap-3 flex-wrap">
+        <StarPicker value={picked} onChange={setPicked} disabled={saving} />
+        {picked > 0 && (
+          <>
+            <span className="text-sm text-text font-medium">{RATING_LABELS[picked]}</span>
+            <button
+              onClick={submit}
+              disabled={saving}
+              className="ml-auto bg-accent text-accent-fg text-xs font-semibold rounded-xl px-4 py-2 neon-btn active:scale-95 disabled:opacity-50 transition-all"
+            >
+              {saving ? 'Сохраняем…' : 'Отправить'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function OrderCard({ order, onCancel, cancelling }: {
   order: ReturnType<typeof useOrdersStore.getState>['orders'][0];
   onCancel: (id: string) => void;
@@ -56,6 +111,7 @@ function OrderCard({ order, onCancel, cancelling }: {
 }) {
   const t = useLocaleStore(s => s.t);
   const isActive = ACTIVE_STATUSES.includes(order.status);
+  const canRate  = order.status === 'DELIVERED' && order.courierId && order.courierRating === null;
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card">
@@ -105,6 +161,22 @@ function OrderCard({ order, onCancel, cancelling }: {
               height="200px"
             />
           )}
+        </div>
+      )}
+
+      {/* Rating section */}
+      {(canRate || order.courierRating !== null) && (
+        <div className="border-t border-border px-4 py-3">
+          {canRate
+            ? <RateBlock orderId={order.id} />
+            : order.courierRating !== null && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-subtle">Ваша оценка:</span>
+                <RatingStars rating={order.courierRating} size="sm" showValue={false} />
+                <span className="text-xs font-semibold text-accent">{order.courierRating} / 5</span>
+              </div>
+            )
+          }
         </div>
       )}
     </div>

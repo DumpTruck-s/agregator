@@ -1,13 +1,24 @@
 'use client';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Bike, MapPin, Navigation, Store, Package } from 'lucide-react';
+import { Bike, MapPin, Navigation, Store, Package, Trophy, TrendingUp } from 'lucide-react';
 import { useShiftStore } from '@/lib/store/shift';
 import { useLocaleStore } from '@/lib/store/locale';
 import { api } from '@/lib/api';
 import { StatusBadge } from '@/components/orders/status-badge';
+import { RatingStars } from '@/components/ui/rating-stars';
 import type { OrderStatus } from '@delivery/shared';
 import type { MapPoint } from '@/components/maps/MapPicker';
+
+interface CourierStats {
+  delivered: number;
+  cancelled: number;
+  earnings: number;
+  rating: number | null;
+  ratingCount: number;
+  rank: number;
+  totalCouriers: number;
+}
 
 const MapPicker    = dynamic(() => import('@/components/maps/MapPicker').then(m => m.MapPicker),          { ssr: false, loading: () => <div className="h-[280px] bg-muted rounded-xl animate-pulse" /> });
 const MapZoneView  = dynamic(() => import('@/components/maps/MapZoneView').then(m => m.MapZoneView),      { ssr: false, loading: () => <div className="h-[200px] bg-muted rounded-xl animate-pulse" /> });
@@ -90,6 +101,7 @@ export default function CourierDashboard() {
   const d = t.courier.dashboard;
   const actions = t.courier.actions;
   const [orders, setOrders]   = useState<ActiveOrder[]>([]);
+  const [stats, setStats]     = useState<CourierStats | null>(null);
   const [ending, setEnding]   = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
 
@@ -100,6 +112,9 @@ export default function CourierDashboard() {
   };
 
   useEffect(() => { fetch(); }, []);
+  useEffect(() => {
+    api.get<CourierStats>('/api/courier/stats').then(setStats).catch(() => {});
+  }, []);
   useEffect(() => {
     if (!shift) return;
     api.get<ActiveOrder[]>('/api/courier/orders/active').then(setOrders).catch(() => {});
@@ -148,6 +163,52 @@ export default function CourierDashboard() {
           height="200px"
         />
       </div>
+
+      {/* Personal rating card */}
+      {stats && (
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card animate-slide-up">
+          <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-accent" strokeWidth={2} />
+            <span className="font-semibold text-sm text-text">Мой рейтинг</span>
+            {stats.totalCouriers > 0 && (
+              <span className="ml-auto text-xs text-subtle">#{stats.rank} из {stats.totalCouriers} курьеров</span>
+            )}
+          </div>
+          <div className="px-4 py-3 flex items-center gap-6 flex-wrap">
+            {/* Stars */}
+            <div className="flex flex-col gap-1">
+              <RatingStars rating={stats.rating} size="md" ratingCount={stats.ratingCount} />
+              {stats.rating === null && (
+                <p className="text-xs text-subtle">
+                  {stats.ratingCount < 3
+                    ? `Нужно ещё ${3 - stats.ratingCount} оценки от клиентов`
+                    : 'Нет оценок'}
+                </p>
+              )}
+            </div>
+            {/* Stats */}
+            <div className="flex items-center gap-1.5">
+              <Package className="w-4 h-4 text-accent shrink-0" strokeWidth={2} />
+              <div>
+                <p className="text-sm font-bold text-text">{stats.delivered}</p>
+                <p className="text-xs text-subtle leading-none">доставок</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0" strokeWidth={2} />
+              <div>
+                <p className="text-sm font-bold text-text">{stats.earnings.toLocaleString('ru-RU')} ₽</p>
+                <p className="text-xs text-subtle leading-none">заработано</p>
+              </div>
+            </div>
+            {stats.cancelled > 0 && (
+              <div className="ml-auto">
+                <p className="text-xs text-subtle/60">{stats.cancelled} отмен</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="font-semibold text-text mb-3">{d.myOrders}</h2>

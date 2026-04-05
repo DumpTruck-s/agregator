@@ -9,6 +9,8 @@ export interface Order {
   deliveryAddress: string;
   deliveryLat: number;
   deliveryLng: number;
+  courierRating: number | null;
+  courierId: string | null;
   createdAt: string;
   org: { name: string };
   tradePoint: { address: string; lat: number; lng: number } | null;
@@ -19,6 +21,7 @@ interface OrdersStore {
   orders: Order[];
   fetch: () => Promise<void>;
   updateStatus: (id: string, status: OrderStatus) => void;
+  setRating: (id: string, rating: number) => void;
 }
 
 export const useOrdersStore = create<OrdersStore>((set, get) => ({
@@ -31,5 +34,9 @@ export const useOrdersStore = create<OrdersStore>((set, get) => ({
 
   updateStatus(id, status) {
     set({ orders: get().orders.map(o => o.id === id ? { ...o, status } : o) });
+  },
+
+  setRating(id, rating) {
+    set({ orders: get().orders.map(o => o.id === id ? { ...o, courierRating: rating } : o) });
   },
 }));

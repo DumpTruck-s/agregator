@@ -33,3 +33,10 @@ orderRouter.patch('/:id/status', validate(UpdateOrderStatusSchema), async (req, 
     ));
   } catch (e) { next(e); }
 });
+
+orderRouter.post('/:id/rate', async (req, res, next) => {
+  try {
+    const rating = Number(req.body.rating);
+    res.json(await service.rateOrder(req.params.id, req.user!.sub, rating));
+  } catch (e) { next(e); }
+});
