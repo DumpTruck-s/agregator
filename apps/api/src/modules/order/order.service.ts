@@ -85,7 +85,7 @@ export async function getOrgOrders(ownerId: string) {
   if (!org) throw new NotFoundError('Organization');
   return prisma.order.findMany({
     where: { orgId: org.id },
-    include: { items: true, customer: { select: { name: true, phone: true } } },
+    include: { items: { include: { menuItem: true } }, customer: { select: { name: true, phone: true } } },
     orderBy: { createdAt: 'desc' },
   });
 }
