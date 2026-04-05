@@ -10,16 +10,27 @@ import type { JwtPayload } from '@/lib/token';
 const CODE_LEN = 6;
 
 function VerifyForm() {
-  const params   = useSearchParams();
-  const email    = params.get('email') ?? '';
+  const params       = useSearchParams();
+  const email        = params.get('email') ?? '';
+  const fallbackCode = params.get('code') ?? '';  // shown if email failed to send
 
-  const [digits, setDigits]     = useState<string[]>(Array(CODE_LEN).fill(''));
+  const [digits, setDigits]     = useState<string[]>(
+    fallbackCode.length === CODE_LEN
+      ? fallbackCode.split('')
+      : Array(CODE_LEN).fill('')
+  );
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [sent, setSent]         = useState(false);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const hydrateAuth = useAuthStore(s => s.hydrate);
+
+  // Auto-submit if fallback code was pre-filled
+  useEffect(() => {
+    if (fallbackCode.length === CODE_LEN) submitCode(fallbackCode);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -79,9 +90,13 @@ function VerifyForm() {
     if (cooldown > 0) return;
     setSent(false);
     try {
-      await api.post('/api/auth/resend-code', { email });
+      const res = await api.post<{ ok: boolean; fallbackCode?: string }>('/api/auth/resend-code', { email });
       setCooldown(60);
       setSent(true);
+      if (res.fallbackCode) {
+        setDigits(res.fallbackCode.split(''));
+        submitCode(res.fallbackCode);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка');
     }
@@ -103,6 +118,14 @@ function VerifyForm() {
       </div>
 
       <div className="px-8 py-6 space-y-5">
+        {/* Fallback: email not sent — show code directly */}
+        {fallbackCode && (
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-4 py-3 text-center">
+            <p className="text-xs text-amber-700 dark:text-amber-400 mb-1">Письмо не удалось отправить. Ваш код:</p>
+            <p className="text-2xl font-bold tracking-[0.3em] text-amber-800 dark:text-amber-300 font-mono">{fallbackCode}</p>
+          </div>
+        )}
+
         {/* OTP inputs */}
         <div className="flex gap-2 justify-center" onPaste={handlePaste}>
           {digits.map((d, i) => (

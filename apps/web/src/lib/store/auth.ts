@@ -43,12 +43,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   async register({ email, password, name, role }) {
-    const result = await api.post<{ needsVerification?: boolean; email?: string } | { user: JwtPayload; token: string }>(
+    const result = await api.post<{ needsVerification?: boolean; email?: string; fallbackCode?: string } | { user: JwtPayload; token: string }>(
       '/api/auth/register',
       { email, password, name, role },
     );
     if ('needsVerification' in result && result.needsVerification) {
-      return `/verify-email?email=${encodeURIComponent(result.email ?? email)}`;
+      const params = new URLSearchParams({ email: result.email ?? email });
+      if (result.fallbackCode) params.set('code', result.fallbackCode);
+      return `/verify-email?${params}`;
     }
     // Fallback: direct login (should not happen with verification on)
     const { user, token } = result as { user: JwtPayload; token: string };

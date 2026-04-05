@@ -39,8 +39,11 @@ export default function LoginPage() {
       window.location.href = href;
     } catch (err) {
       const msg = err instanceof Error ? err.message : la.errorFallback;
-      if (msg === 'EMAIL_NOT_VERIFIED') {
-        window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
+      if (msg.startsWith('EMAIL_NOT_VERIFIED')) {
+        const params = new URLSearchParams({ email });
+        const code = msg.split(':')[1];
+        if (code) params.set('code', code);
+        window.location.href = `/verify-email?${params}`;
         return;
       }
       setError(msg);

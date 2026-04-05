@@ -1,10 +1,13 @@
-export async function sendVerificationEmail(to: string, name: string, code: string) {
+/**
+ * Returns true if email was sent successfully, false otherwise.
+ * Caller can use the return value to decide whether to expose the code as fallback.
+ */
+export async function sendVerificationEmail(to: string, name: string, code: string): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
-    // Dev fallback — log to console
-    console.log(`\n📧 [DEV] Verification code for ${to}: ${code}\n`);
-    return;
+    console.log(`\n📧 [MAIL] Verification code for ${to}: ${code}\n`);
+    return false;
   }
 
   const html = `
@@ -18,22 +21,31 @@ export async function sendVerificationEmail(to: string, name: string, code: stri
     </div>
   `;
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: process.env.MAIL_FROM ?? 'Доставка <noreply@resend.dev>',
-      to: [to],
-      subject: `${code} — ваш код подтверждения`,
-      html,
-    }),
-  });
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.MAIL_FROM ?? 'onboarding@resend.dev',
+        to: [to],
+        subject: `${code} — ваш код подтверждения`,
+        html,
+      }),
+    });
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error('[Mailer] Resend error:', err);
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('[Mailer] Resend error:', err);
+      console.log(`📧 [MAIL FALLBACK] Code for ${to}: ${code}`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('[Mailer] Network error:', e);
+    console.log(`📧 [MAIL FALLBACK] Code for ${to}: ${code}`);
+    return false;
   }
 }

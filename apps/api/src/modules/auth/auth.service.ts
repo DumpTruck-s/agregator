@@ -34,8 +34,8 @@ export async function register(dto: RegisterDto) {
     // Unverified account — resend code
     if (!exists.emailVerified) {
       const code = await generateCode(exists.id);
-      await sendVerificationEmail(exists.email, exists.name, code);
-      return { needsVerification: true, email: exists.email };
+      const sent = await sendVerificationEmail(exists.email, exists.name, code);
+      return { needsVerification: true, email: exists.email, ...(sent ? {} : { fallbackCode: code }) };
     }
     throw new AppError('Email already in use', 409);
   }
@@ -51,8 +51,8 @@ export async function register(dto: RegisterDto) {
   });
 
   const code = await generateCode(user.id);
-  await sendVerificationEmail(user.email, user.name, code);
-  return { needsVerification: true, email: user.email };
+  const sent = await sendVerificationEmail(user.email, user.name, code);
+  return { needsVerification: true, email: user.email, ...(sent ? {} : { fallbackCode: code }) };
 }
 
 export async function verifyEmail(email: string, code: string) {
@@ -85,8 +85,8 @@ export async function resendCode(email: string) {
   }
 
   const code = await generateCode(user.id);
-  await sendVerificationEmail(user.email, user.name, code);
-  return { ok: true };
+  const sent = await sendVerificationEmail(user.email, user.name, code);
+  return { ok: true, ...(sent ? {} : { fallbackCode: code }) };
 }
 
 export async function login(dto: LoginDto) {
@@ -99,10 +99,9 @@ export async function login(dto: LoginDto) {
   if (user.isBlocked) throw new AppError('Аккаунт заблокирован', 403);
 
   if (!user.emailVerified) {
-    // Auto-resend code so they can verify immediately
     const code = await generateCode(user.id);
-    await sendVerificationEmail(user.email, user.name, code);
-    throw new AppError('EMAIL_NOT_VERIFIED', 403);
+    const sent = await sendVerificationEmail(user.email, user.name, code);
+    throw new AppError(`EMAIL_NOT_VERIFIED${sent ? '' : `:${code}`}`, 403);
   }
 
   const payload = { id: user.id, email: user.email, name: user.name, role: user.role };
