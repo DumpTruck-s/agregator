@@ -16,7 +16,7 @@ const PROTECTED: { prefix: string; roles: Role[] }[] = [
   { prefix: '/admin',    roles: ['ADMIN'] },
 ];
 
-const AUTH_PAGES = ['/login', '/register'];
+const AUTH_PAGES = ['/login', '/register', '/verify-email'];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
