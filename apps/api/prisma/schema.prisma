@@ -32,8 +32,11 @@ model User {
   role         Role     @default(CUSTOMER)
   name         String
   phone        String?
-  isBlocked    Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  isBlocked     Boolean   @default(false)
+  emailVerified Boolean   @default(false)
+  verifyCode    String?
+  verifyCodeExp DateTime?
+  createdAt     DateTime  @default(now())
 
   ownedOrgs        Organization[]
   orders           Order[]          @relation("CustomerOrders")

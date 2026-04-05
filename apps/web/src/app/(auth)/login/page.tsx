@@ -38,7 +38,12 @@ export default function LoginPage() {
       const href = await login(email, password);
       window.location.href = href;
     } catch (err) {
-      setError(err instanceof Error ? err.message : la.errorFallback);
+      const msg = err instanceof Error ? err.message : la.errorFallback;
+      if (msg === 'EMAIL_NOT_VERIFIED') {
+        window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
+        return;
+      }
+      setError(msg);
       setLoading(false);
     }
   }

@@ -18,6 +18,20 @@ authRouter.post('/login', validate(LoginSchema), async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+authRouter.post('/verify-email', async (req, res, next) => {
+  try {
+    const { email, code } = req.body;
+    res.json(await service.verifyEmail(email, String(code)));
+  } catch (e) { next(e); }
+});
+
+authRouter.post('/resend-code', async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    res.json(await service.resendCode(email));
+  } catch (e) { next(e); }
+});
+
 authRouter.get('/me', authGuard, (req, res) => {
   res.json(req.user);
 });
