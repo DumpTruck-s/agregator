@@ -159,7 +159,7 @@ function CategorySection({ cat, orgId, onRefresh }: { cat: OrgCategory; orgId: s
   }
 
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm">
+    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card">
       <div className="px-4 py-3 border-b border-border bg-muted/50 font-semibold text-sm text-text">{cat.name}</div>
       <div className="divide-y divide-border">
         {cat.items.length === 0 && <p className="px-4 py-3 text-sm text-subtle">{om.noItems}</p>}

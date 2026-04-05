@@ -112,7 +112,7 @@ export default function CartPage() {
 
       <button
         onClick={handleOrder} disabled={loading || !point}
-        className="w-full bg-accent text-accent-fg rounded-2xl py-3.5 font-semibold hover:opacity-90 active:scale-95 transition-all duration-200 disabled:opacity-50"
+        className="w-full bg-accent text-accent-fg rounded-2xl py-3.5 font-semibold neon-btn active:scale-95 disabled:opacity-50"
       >
         {loading ? ct.ordering : `${ct.orderBtn} · ${total()} ₽`}
       </button>

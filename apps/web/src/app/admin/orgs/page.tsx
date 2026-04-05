@@ -75,7 +75,7 @@ export default function AdminOrgsPage() {
 
       <div className="space-y-3">
         {filtered.map((org, i) => (
-          <div key={org.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm hover:shadow-theme-md transition-all animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
+          <div key={org.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
             <div className="px-4 py-3 flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">

@@ -76,7 +76,7 @@ function StartShiftForm({ onStarted }: { onStarted: () => void }) {
           <span className="text-sm font-bold text-text w-8 text-right">{radius}</span>
         </div>
         <button onClick={handleStart} disabled={loading || !point}
-          className="w-full bg-accent text-accent-fg rounded-2xl py-3 font-semibold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">
+          className="w-full bg-accent text-accent-fg rounded-2xl py-3 font-semibold neon-btn active:scale-95 disabled:opacity-50">
           {loading ? ss.starting : ss.start}
         </button>
       </div>
@@ -167,7 +167,7 @@ export default function CourierDashboard() {
               const action = COURIER_ACTIONS[order.status];
               const hasCoords = order.deliveryLat && order.deliveryLng && order.tradePoint.lat && order.tradePoint.lng;
               return (
-                <div key={order.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm animate-slide-up" style={{ animationDelay: `${i * 0.07}s` }}>
+                <div key={order.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card animate-slide-up" style={{ animationDelay: `${i * 0.07}s` }}>
                   <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center justify-between">
                     <p className="font-semibold text-sm text-text">{order.org.name}</p>
                     <StatusBadge status={order.status} />

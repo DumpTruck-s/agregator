@@ -58,7 +58,7 @@ function OrderCard({ order, onCancel, cancelling }: {
   const isActive = ACTIVE_STATUSES.includes(order.status);
 
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm hover:shadow-theme-md transition-all duration-300">
+    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card">
       <div className="flex items-start justify-between gap-2 px-4 py-3 border-b border-border">
         <div>
           <p className="font-semibold text-text">{order.org.name}</p>

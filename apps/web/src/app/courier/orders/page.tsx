@@ -86,7 +86,7 @@ export default function CourierOrdersPage() {
 
       <div className="space-y-4">
         {orders.map((order, i) => (
-          <div key={order.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm hover:shadow-theme-md transition-all animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
+          <div key={order.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
             <div className="px-4 py-3 border-b border-border bg-muted/50">
               <p className="font-semibold text-text">{order.org.name}</p>
             </div>
@@ -104,7 +104,7 @@ export default function CourierOrdersPage() {
             <div className="px-4 py-3 border-t border-border flex items-center justify-between">
               <span className="font-bold text-lg text-text">{order.totalPrice} ₽</span>
               <button onClick={() => acceptOrder(order.id)} disabled={accepting === order.id}
-                className="bg-accent text-accent-fg rounded-xl px-5 py-2 text-sm font-medium hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">
+                className="bg-accent text-accent-fg rounded-xl px-5 py-2 text-sm font-medium neon-btn active:scale-95 disabled:opacity-50">
                 {accepting === order.id ? t.common.unknown : co.accept}
               </button>
             </div>

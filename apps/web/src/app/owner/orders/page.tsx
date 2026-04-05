@@ -89,7 +89,7 @@ export default function OwnerOrdersPage() {
         {shown.map((order, i) => {
           const action = OWNER_ACTION[order.status];
           return (
-            <div key={order.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm hover:shadow-theme-md transition-all animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
+            <div key={order.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-theme-sm neon-card animate-slide-up" style={{ animationDelay: `${i * 0.06}s` }}>
               <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50">
                 <div>
                   <p className="font-semibold text-text">{order.customer.name}</p>

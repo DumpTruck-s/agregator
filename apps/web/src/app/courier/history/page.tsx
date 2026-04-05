@@ -33,7 +33,7 @@ export default function CourierHistoryPage() {
             { label: ch.completed,   value: delivered.length },
             { label: ch.totalAmount, value: `${delivered.reduce((s, o) => s + o.totalPrice, 0)} ₽` },
           ].map((s, i) => (
-            <div key={i} className="bg-card border border-border rounded-2xl p-4 shadow-theme-sm animate-slide-up" style={{ animationDelay: `${i * 0.08}s` }}>
+            <div key={i} className="bg-card border border-border rounded-2xl p-4 shadow-theme-sm neon-card animate-slide-up" style={{ animationDelay: `${i * 0.08}s` }}>
               <p className="text-sm text-subtle">{s.label}</p>
               <p className="font-display text-2xl font-semibold text-text mt-1">{s.value}</p>
             </div>
@@ -54,7 +54,7 @@ export default function CourierHistoryPage() {
 
       <div className="space-y-3">
         {orders.map((order, i) => (
-          <div key={order.id} className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center justify-between shadow-theme-sm hover:shadow-theme-md transition-all animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
+          <div key={order.id} className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center justify-between shadow-theme-sm neon-card animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-text">{order.org.name}</p>
               <div className="flex items-center gap-1 text-subtle mt-0.5">

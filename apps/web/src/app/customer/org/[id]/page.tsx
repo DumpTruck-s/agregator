@@ -156,7 +156,7 @@ export default function OrgMenuPage() {
                     return (
                       <div
                         key={item.id}
-                        className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 hover:shadow-theme-sm hover:border-accent/20 transition-all duration-200 animate-slide-up"
+                        className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 neon-card shadow-theme-sm animate-slide-up"
                         style={{ animationDelay: `${(ci * 4 + ii) * 0.04}s` }}
                       >
                         {item.image && (

@@ -49,7 +49,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="relative w-full max-w-sm animate-scale-in">
-        <div className="bg-card border border-border rounded-2xl shadow-theme-lg overflow-hidden">
+        <div className="bg-card border border-border dark:border-accent/20 rounded-2xl shadow-theme-lg dark:shadow-neon-sm overflow-hidden">
           <div className="px-8 pt-8 pb-6 border-b border-border">
             <h1 className="font-display text-3xl font-semibold text-text">{ra.title}</h1>
             <p className="text-subtle text-sm mt-1.5">{ra.subtitle}</p>
@@ -87,7 +87,7 @@ export default function RegisterPage() {
               </div>
 
               <button
-                className="bg-accent text-accent-fg rounded-xl py-2.5 text-sm font-semibold mt-1 hover:opacity-90 active:scale-95 transition-all duration-200 disabled:opacity-50"
+                className="bg-accent text-accent-fg rounded-xl py-2.5 text-sm font-semibold mt-1 neon-btn active:scale-95 disabled:opacity-50"
                 type="submit" disabled={loading}
               >
                 {loading ? ra.loading : ra.submit}

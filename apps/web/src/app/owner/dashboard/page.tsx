@@ -45,7 +45,7 @@ function CreateOrgForm({ onCreated }: { onCreated: () => void }) {
           className="border border-border bg-muted rounded-xl px-3.5 py-2.5 text-sm text-text placeholder:text-subtle/60 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent transition-all resize-none"
           placeholder={oc.descPlaceholder} rows={3} value={desc} onChange={e => setDesc(e.target.value)}
         />
-        <button className="bg-accent text-accent-fg rounded-xl py-2.5 text-sm font-semibold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50" disabled={loading}>
+        <button className="bg-accent text-accent-fg rounded-xl py-2.5 text-sm font-semibold neon-btn active:scale-95 disabled:opacity-50" disabled={loading}>
           {loading ? oc.creating : oc.submit}
         </button>
       </form>
@@ -55,7 +55,7 @@ function CreateOrgForm({ onCreated }: { onCreated: () => void }) {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 shadow-theme-sm hover:shadow-theme-md transition-all duration-300">
+    <div className="bg-card border border-border rounded-2xl p-5 shadow-theme-sm neon-card">
       <p className="text-sm text-subtle">{label}</p>
       <p className="font-display text-2xl font-semibold text-text mt-1">{value}</p>
     </div>
@@ -124,7 +124,7 @@ export default function OwnerDashboard() {
           </div>
           <div className="space-y-3">
             {activeOrders.slice(0, 3).map((order, i) => (
-              <div key={order.id} className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center justify-between animate-slide-up shadow-theme-sm" style={{ animationDelay: `${i * 0.07}s` }}>
+              <div key={order.id} className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center justify-between animate-slide-up shadow-theme-sm neon-card" style={{ animationDelay: `${i * 0.07}s` }}>
                 <div>
                   <p className="font-medium text-text">{order.customer.name}</p>
                   <p className="text-sm text-subtle">{order.items.map(i => `${i.menuItem.name} ×${i.quantity}`).join(', ')}</p>

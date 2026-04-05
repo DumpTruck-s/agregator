@@ -82,7 +82,7 @@ export default function AdminCouriersPage() {
           const activeShift = courier.shifts[0];
           return (
             <div key={courier.id}
-              className={`bg-card border rounded-2xl px-4 py-3 flex items-center justify-between gap-4 shadow-theme-sm hover:shadow-theme-md transition-all animate-slide-up ${courier.isBlocked ? 'border-red-200 dark:border-red-900/50 opacity-75' : 'border-border'}`}
+              className={`bg-card border rounded-2xl px-4 py-3 flex items-center justify-between gap-4 shadow-theme-sm neon-card animate-slide-up ${courier.isBlocked ? 'border-red-200 dark:border-red-900/50 opacity-75' : 'border-border'}`}
               style={{ animationDelay: `${i * 0.06}s` }}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">

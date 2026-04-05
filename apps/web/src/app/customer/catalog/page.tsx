@@ -121,7 +121,7 @@ export default function CatalogPage() {
                 <Link
                   key={org.id}
                   href={`/customer/org/${org.id}`}
-                  className="group border border-border bg-card rounded-2xl p-5 hover:shadow-theme-md hover:border-accent/30 transition-all duration-300 hover:-translate-y-0.5 animate-slide-up flex flex-col"
+                  className="group border border-border bg-card rounded-2xl p-5 neon-card shadow-theme-sm animate-slide-up flex flex-col"
                   style={{ animationDelay: `${i * 0.05}s` }}
                 >
                   <div className="flex items-start gap-3 mb-3">
