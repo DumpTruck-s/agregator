@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Nunito } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 import { AuthProvider } from '@/components/auth-provider';
 import './globals.css';
 
-const font = Nunito({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700', '800'],
+const font = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
 });

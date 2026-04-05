@@ -2,37 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Цветовые токены ─────────────────────────────────────────────────── */
+/* ─── Цветовые токены — светлая тема ──────────────────────────────────── */
 :root {
-  --bg:          #F7F8FF;
-  --card:        #FFFFFF;
-  --muted:       #EEF0FF;
-  --border:      #DDE1F8;
-  --text:        #0C0F2E;
-  --subtle:      #5A62A0;
-  --accent:      #2563EB;
-  --accent-fg:   #FFFFFF;
-  --accent-muted: rgba(37,99,235,.10);
+  --bg:           #F8FAFC;
+  --card:         #FFFFFF;
+  --muted:        #F1F5F9;
+  --border:       #E2E8F0;
+  --text:         #0F172A;
+  --subtle:       #64748B;
+  --accent:       #00D1FF;
+  --accent-fg:    #0A1628;
+  --accent-muted: rgba(0, 209, 255, 0.12);
 
-  --shadow-sm: 0 1px 3px rgba(10,15,60,.06), 0 1px 2px rgba(10,15,60,.04);
-  --shadow-md: 0 4px 16px rgba(10,15,60,.10), 0 2px 4px rgba(10,15,60,.05);
-  --shadow-lg: 0 12px 40px rgba(10,15,60,.14), 0 4px 8px rgba(10,15,60,.06);
+  --neon-glow:    rgba(0, 209, 255, 0.35);
+  --neon-glow-lg: rgba(0, 209, 255, 0.55);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.05);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
 }
 
+/* ─── Тёмная тема ─────────────────────────────────────────────────────── */
 .dark {
-  --bg:          #06060A;
-  --card:        #0E0E14;
-  --muted:       #141420;
-  --border:      #1E1E2E;
-  --text:        #EEEEFF;
-  --subtle:      #8888B8;
-  --accent:      #B06EFF;
-  --accent-fg:   #06060A;
-  --accent-muted: rgba(176,110,255,.15);
+  --bg:           #0F1115;
+  --card:         #1A1D23;
+  --muted:        #161A1F;
+  --border:       #252A35;
+  --text:         #FFFFFF;
+  --subtle:       #94A3B8;
+  --accent:       #00E0FF;
+  --accent-fg:    #0A0E15;
+  --accent-muted: rgba(0, 224, 255, 0.15);
 
-  --shadow-sm: 0 1px 4px rgba(0,0,0,.5);
-  --shadow-md: 0 4px 20px rgba(0,0,0,.65);
-  --shadow-lg: 0 12px 48px rgba(0,0,0,.75);
+  --neon-glow:    rgba(0, 224, 255, 0.45);
+  --neon-glow-lg: rgba(0, 224, 255, 0.7);
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.5),  0 0 0 1px rgba(0,224,255,.03);
+  --shadow-md: 0 4px 24px rgba(0,0,0,.6), 0 0 20px rgba(0,224,255,.05);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,.75),0 0 40px rgba(0,224,255,.08);
 }
 
 /* ─── Базовые стили ───────────────────────────────────────────────────── */
@@ -41,55 +48,92 @@
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans), ui-rounded, system-ui, sans-serif;
+  font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
   transition: background-color 0.25s ease, color 0.25s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Нативный select — убираем стрелку, делаем похожим на input */
+/* ─── Нативный select ─────────────────────────────────────────────────── */
 select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235A62A0' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   padding-right: 2.25rem !important;
 }
 
-/* Скроллбар */
+/* ─── Скроллбар ───────────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--subtle); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 /* ─── Утилиты ─────────────────────────────────────────────────────────── */
 @layer utilities {
-  /* Safe area for iOS home bar */
-  .safe-area-pb {
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  }
-  /* Extra bottom padding on mobile when bottom nav is present */
-  .mobile-safe-bottom {
-    padding-bottom: max(5rem, calc(4rem + env(safe-area-inset-bottom)));
-  }
+  /* Safe area */
+  .safe-area-pb        { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+  .mobile-safe-bottom  { padding-bottom: max(5rem, calc(4rem + env(safe-area-inset-bottom))); }
 
+  /* Shadows */
   .shadow-theme-sm { box-shadow: var(--shadow-sm); }
   .shadow-theme-md { box-shadow: var(--shadow-md); }
   .shadow-theme-lg { box-shadow: var(--shadow-lg); }
 
+  /* Neon glow */
+  .neon-glow-sm { box-shadow: 0 0 10px var(--neon-glow), 0 0 20px rgba(0,0,0,.1); }
+  .neon-glow-md { box-shadow: 0 0 16px var(--neon-glow), 0 0 40px var(--neon-glow); }
+
+  /* Neon card — hover effect */
+  .neon-card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.25s ease;
+  }
+  .neon-card:hover {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 1px var(--accent),
+                0 4px 24px var(--neon-glow),
+                0 0 60px rgba(0,224,255,.06);
+    transform: translateY(-2px);
+  }
+
+  /* Neon button */
+  .neon-btn {
+    box-shadow: 0 0 12px var(--neon-glow);
+    transition: box-shadow 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+  }
+  .neon-btn:hover {
+    box-shadow: 0 0 20px var(--neon-glow), 0 0 50px var(--neon-glow);
+    transform: scale(1.02);
+    filter: brightness(1.08);
+  }
+  .neon-btn:active { transform: scale(0.97); }
+
+  /* Neon badge */
+  .neon-badge {
+    background: var(--accent-muted);
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  /* Glass nav */
   .glass {
-    background: rgba(247,248,255,0.88);
+    background: rgba(248,250,252, 0.88);
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
   }
   .dark .glass {
-    background: rgba(6,6,10,0.92);
+    background: rgba(15,17,21, 0.92);
   }
 
+  /* Accent muted bg */
   .bg-accent-muted { background: var(--accent-muted); }
 
+  /* Stagger delays */
   .stagger-1 { animation-delay: 0.05s; }
   .stagger-2 { animation-delay: 0.10s; }
   .stagger-3 { animation-delay: 0.15s; }

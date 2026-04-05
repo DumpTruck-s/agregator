@@ -34,7 +34,7 @@ export function BottomNav({ role }: { role: Role }) {
   const tabs = ROLE_TABS[role];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-card/95 backdrop-blur-lg border-t border-border safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-card/95 backdrop-blur-xl border-t border-border safe-area-pb dark:border-accent/10">
       <div className="flex">
         {tabs.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href);
@@ -42,12 +42,21 @@ export function BottomNav({ role }: { role: Role }) {
             <Link
               key={href}
               href={href}
-              className={`flex-1 flex flex-col items-center gap-1 py-2.5 min-h-[56px] justify-center transition-colors ${
-                active ? 'text-accent' : 'text-subtle'
+              className={`flex-1 flex flex-col items-center gap-1 py-2.5 min-h-[56px] justify-center transition-all duration-200 relative ${
+                active ? 'text-accent' : 'text-subtle hover:text-text'
               }`}
             >
-              <Icon className="w-5 h-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
-              <span className="text-[10px] font-medium leading-none">{label}</span>
+              {/* Active neon indicator */}
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-accent rounded-full shadow-neon-sm" />
+              )}
+              <Icon
+                className={`w-5 h-5 shrink-0 transition-all duration-200 ${active ? 'drop-shadow-[0_0_6px_var(--neon-glow)]' : ''}`}
+                strokeWidth={active ? 2.5 : 2}
+              />
+              <span className={`text-[10px] font-semibold leading-none ${active ? 'text-accent' : ''}`}>
+                {label}
+              </span>
             </Link>
           );
         })}
