@@ -1,16 +1,8 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { TILE_URL, TILE_ATTRIBUTION, MARKER_ICON_URL, MARKER_ICON_RETINA_URL, MARKER_SHADOW_URL } from './tiles';
-
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconUrl: MARKER_ICON_URL,
-  iconRetinaUrl: MARKER_ICON_RETINA_URL,
-  shadowUrl: MARKER_SHADOW_URL,
-});
+import Map, { Marker, Source, Layer } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { MAP_STYLE } from './tiles';
 
 interface Zone {
   lat: number;
@@ -24,26 +16,53 @@ interface MapZoneViewProps {
   height?: string;
 }
 
+// Build a GeoJSON polygon approximating a circle
+function circleGeoJSON(lat: number, lng: number, radiusKm: number, steps = 64) {
+  const coords: [number, number][] = [];
+  for (let i = 0; i <= steps; i++) {
+    const angle = (i / steps) * 2 * Math.PI;
+    const dLat = (radiusKm / 111.32) * Math.sin(angle);
+    const dLng = (radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180))) * Math.cos(angle);
+    coords.push([lng + dLng, lat + dLat]);
+  }
+  return {
+    type: 'Feature' as const,
+    geometry: { type: 'Polygon' as const, coordinates: [coords] },
+    properties: {},
+  };
+}
+
 export function MapZoneView({ zones, height = '250px' }: MapZoneViewProps) {
-  const center: [number, number] = zones.length > 0
-    ? [zones[0].lat, zones[0].lng]
-    : [55.7558, 37.6176];
+  const center = zones.length > 0 ? zones[0] : { lat: 55.7558, lng: 37.6176 };
 
   return (
-    <div className="rounded-xl overflow-hidden border border-border" style={{ height }}>
-      <MapContainer center={center} zoom={11} style={{ height: '100%', width: '100%' }}>
-        <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
+    <div style={{ height }} className="w-full">
+      <Map
+        initialViewState={{ longitude: center.lng, latitude: center.lat, zoom: 11 }}
+        mapStyle={MAP_STYLE}
+        style={{ width: '100%', height: '100%' }}
+        interactive={false}
+      >
         {zones.map((zone, i) => (
-          <div key={i}>
-            <Marker position={[zone.lat, zone.lng]} />
-            <Circle
-              center={[zone.lat, zone.lng]}
-              radius={zone.radiusKm * 1000}
-              pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.1 }}
-            />
-          </div>
+          <span key={i}>
+            <Source id={`zone-${i}`} type="geojson" data={circleGeoJSON(zone.lat, zone.lng, zone.radiusKm)}>
+              <Layer
+                id={`zone-fill-${i}`}
+                type="fill"
+                paint={{ 'fill-color': '#7c3aed', 'fill-opacity': 0.12 }}
+              />
+              <Layer
+                id={`zone-line-${i}`}
+                type="line"
+                paint={{ 'line-color': '#7c3aed', 'line-width': 2, 'line-opacity': 0.7 }}
+              />
+            </Source>
+            <Marker longitude={zone.lng} latitude={zone.lat}>
+              <div className="w-3 h-3 bg-accent rounded-full border-2 border-white shadow" />
+            </Marker>
+          </span>
         ))}
-      </MapContainer>
+      </Map>
     </div>
   );
 }

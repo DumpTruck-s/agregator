@@ -1,18 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Search, X, Loader2 } from 'lucide-react';
-import { TILE_URL, TILE_ATTRIBUTION, MARKER_ICON_URL, MARKER_ICON_RETINA_URL, MARKER_SHADOW_URL } from './tiles';
-
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconUrl: MARKER_ICON_URL,
-  iconRetinaUrl: MARKER_ICON_RETINA_URL,
-  shadowUrl: MARKER_SHADOW_URL,
-});
+import { useRef, useState, useCallback, useEffect } from 'react';
+import Map, { Marker, NavigationControl, type MapRef, type MapMouseEvent } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { Search, X, Loader2, MapPin } from 'lucide-react';
+import { MAP_STYLE } from './tiles';
 
 export interface MapPoint {
   lat: number;
@@ -33,10 +25,6 @@ interface PhotonFeature {
   };
 }
 
-interface PhotonResponse {
-  features: PhotonFeature[];
-}
-
 function photonAddress(p: PhotonFeature['properties']): string {
   const parts = [
     p.name,
@@ -51,52 +39,27 @@ function photonAddress(p: PhotonFeature['properties']): string {
 
 async function reverseGeocode(lat: number, lng: number): Promise<string> {
   try {
-    const res = await fetch(
-      `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=ru`,
-      { headers: { 'Accept': 'application/json' } }
-    );
-    const data: PhotonResponse = await res.json();
+    const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=ru`);
+    const data = await res.json();
     if (data.features?.[0]) return photonAddress(data.features[0].properties) || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
   } catch {}
   return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 }
 
 async function searchPlaces(query: string): Promise<{ label: string; lat: number; lng: number }[]> {
-  const res = await fetch(
-    `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=ru&limit=6`,
-    { headers: { 'Accept': 'application/json' } }
-  );
-  const data: PhotonResponse = await res.json();
-  return (data.features ?? []).map(f => ({
+  const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=ru&limit=6`);
+  const data = await res.json();
+  return (data.features ?? []).map((f: PhotonFeature) => ({
     label: photonAddress(f.properties),
     lat: f.geometry.coordinates[1],
     lng: f.geometry.coordinates[0],
-  })).filter(r => r.label);
-}
-
-function ClickHandler({ onPick }: { onPick: (point: MapPoint) => void }) {
-  useMapEvents({
-    async click(e) {
-      const { lat, lng } = e.latlng;
-      const address = await reverseGeocode(lat, lng);
-      onPick({ lat, lng, address });
-    },
-  });
-  return null;
-}
-
-function FlyTo({ point }: { point: MapPoint | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (point) map.flyTo([point.lat, point.lng], Math.max(map.getZoom(), 15), { duration: 1 });
-  }, [point?.lat, point?.lng]);
-  return null;
+  })).filter((r: { label: string }) => r.label);
 }
 
 interface MapPickerProps {
   value?: MapPoint | null;
   onChange: (point: MapPoint) => void;
-  center?: [number, number];
+  center?: [number, number]; // [lat, lng]
   zoom?: number;
   height?: string;
 }
@@ -108,11 +71,22 @@ export function MapPicker({
   zoom = 12,
   height = '300px',
 }: MapPickerProps) {
-  const mapRef = useRef<L.Map | null>(null);
-  const [query, setQuery]     = useState('');
-  const [results, setResults] = useState<{ label: string; lat: number; lng: number }[]>([]);
+  const mapRef = useRef<MapRef>(null);
+  const [query, setQuery]         = useState('');
+  const [results, setResults]     = useState<{ label: string; lat: number; lng: number }[]>([]);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Fly to new value when it changes externally
+  useEffect(() => {
+    if (value && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [value.lng, value.lat],
+        zoom: Math.max(mapRef.current.getZoom(), 15),
+        duration: 800,
+      });
+    }
+  }, [value?.lat, value?.lng]);
 
   const search = useCallback((q: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -125,6 +99,14 @@ export function MapPicker({
     }, 500);
   }, []);
 
+  async function handleMapClick(e: MapMouseEvent) {
+    const { lng, lat } = e.lngLat;
+    const address = await reverseGeocode(lat, lng);
+    onChange({ lat, lng, address });
+    setQuery(address);
+    setResults([]);
+  }
+
   function pickResult(r: { label: string; lat: number; lng: number }) {
     onChange({ lat: r.lat, lng: r.lng, address: r.label });
     setQuery(r.label);
@@ -133,7 +115,7 @@ export function MapPicker({
 
   return (
     <div className="space-y-2">
-      {/* Search bar */}
+      {/* Search */}
       <div className="relative">
         <div className="flex items-center gap-2 border border-border bg-muted rounded-xl px-3 py-2">
           {searching
@@ -144,7 +126,7 @@ export function MapPicker({
             type="text"
             value={query}
             onChange={e => { setQuery(e.target.value); search(e.target.value); }}
-            placeholder="Поиск: улица, город, координаты..."
+            placeholder="Поиск: улица, город, район..."
             className="flex-1 bg-transparent text-sm text-text placeholder:text-subtle/60 focus:outline-none"
           />
           {query && (
@@ -153,9 +135,8 @@ export function MapPicker({
             </button>
           )}
         </div>
-
         {results.length > 0 && (
-          <div className="absolute z-[1000] top-full mt-1 left-0 right-0 bg-card border border-border rounded-xl shadow-theme-md overflow-hidden">
+          <div className="absolute z-[200] top-full mt-1 left-0 right-0 bg-card border border-border rounded-xl shadow-theme-md overflow-hidden">
             {results.map((r, i) => (
               <button
                 key={i}
@@ -171,17 +152,27 @@ export function MapPicker({
 
       {/* Map */}
       <div className="rounded-xl overflow-hidden border border-border" style={{ height }}>
-        <MapContainer
-          center={value ? [value.lat, value.lng] : center}
-          zoom={zoom}
-          style={{ height: '100%', width: '100%' }}
+        <Map
           ref={mapRef}
+          initialViewState={{
+            longitude: value?.lng ?? center[1],
+            latitude: value?.lat ?? center[0],
+            zoom,
+          }}
+          mapStyle={MAP_STYLE}
+          onClick={handleMapClick}
+          cursor="crosshair"
+          style={{ width: '100%', height: '100%' }}
         >
-          <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
-          <ClickHandler onPick={p => { onChange(p); setQuery(p.address ?? ''); setResults([]); }} />
-          <FlyTo point={value ?? null} />
-          {value && <Marker position={[value.lat, value.lng]} />}
-        </MapContainer>
+          <NavigationControl position="top-right" />
+          {value && (
+            <Marker longitude={value.lng} latitude={value.lat}>
+              <div className="w-8 h-8 bg-accent rounded-full border-2 border-white shadow-lg flex items-center justify-center -translate-y-4">
+                <MapPin className="w-4 h-4 text-accent-fg" strokeWidth={2.5} />
+              </div>
+            </Marker>
+          )}
+        </Map>
       </div>
     </div>
   );
